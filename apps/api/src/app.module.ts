@@ -5,6 +5,8 @@ import configuration from './config/configuration';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TenantsModule } from './modules/tenants/tenant.module';
+import { AttractionsModule } from './modules/attractions/attraction.module';
+import { RagModule } from './modules/rag/rag.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { TenantsModule } from './modules/tenants/tenant.module';
     HealthModule,
     AuthModule,
     TenantsModule,
+    RagModule,
+    AttractionsModule,
   ],
 })
 export class AppModule {}

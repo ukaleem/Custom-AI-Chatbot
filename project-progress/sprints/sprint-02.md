@@ -1,4 +1,4 @@
-# Sprint 2 — Data Layer & RAG Pipeline 🚀 READY TO START
+# Sprint 2 — Data Layer & RAG Pipeline ✅ COMPLETE
 
 **Duration:** Week 3–4  
 **Depends on:** Sprint 1 ✅  
@@ -29,32 +29,32 @@ Companies can feed attraction data via REST API. The RAG pipeline embeds that da
 
 | # | Task | File | Status |
 |---|------|------|--------|
-| 1 | Attraction MongoDB schema | `apps/api/src/modules/attractions/schemas/attraction.schema.ts` | ⬜ |
-| 2 | Create attraction DTO | `apps/api/src/modules/attractions/dto/create-attraction.dto.ts` | ⬜ |
-| 3 | Update attraction DTO | `apps/api/src/modules/attractions/dto/update-attraction.dto.ts` | ⬜ |
-| 4 | Bulk import DTO | `apps/api/src/modules/attractions/dto/bulk-import.dto.ts` | ⬜ |
-| 5 | Attraction CRUD service | `apps/api/src/modules/attractions/attraction.service.ts` | ⬜ |
-| 6 | Attraction REST controller | `apps/api/src/modules/attractions/attraction.controller.ts` | ⬜ |
-| 7 | Attraction module | `apps/api/src/modules/attractions/attraction.module.ts` | ⬜ |
+| 1 | Attraction MongoDB schema | `apps/api/src/modules/attractions/schemas/attraction.schema.ts` | ✅ |
+| 2 | Create attraction DTO | `apps/api/src/modules/attractions/dto/create-attraction.dto.ts` | ✅ |
+| 3 | Update attraction DTO | `apps/api/src/modules/attractions/dto/update-attraction.dto.ts` | ✅ |
+| 4 | Bulk import DTO | `apps/api/src/modules/attractions/dto/bulk-import.dto.ts` | ✅ |
+| 5 | Attraction CRUD service | `apps/api/src/modules/attractions/attraction.service.ts` | ✅ |
+| 6 | Attraction REST controller | `apps/api/src/modules/attractions/attraction.controller.ts` | ✅ |
+| 7 | Attraction module | `apps/api/src/modules/attractions/attraction.module.ts` | ✅ |
 
 ### RAG Module
 
 | # | Task | File | Status |
 |---|------|------|--------|
-| 8 | Qdrant service | `apps/api/src/modules/rag/qdrant.service.ts` | ⬜ |
-| 9 | Embedding service | `apps/api/src/modules/rag/embedding.service.ts` | ⬜ |
-| 10 | Retrieval service | `apps/api/src/modules/rag/retrieval.service.ts` | ⬜ |
-| 11 | RAG module | `apps/api/src/modules/rag/rag.module.ts` | ⬜ |
+| 8 | Qdrant service | `apps/api/src/modules/rag/qdrant.service.ts` | ✅ |
+| 9 | Embedding service | `apps/api/src/modules/rag/embedding.service.ts` | ✅ |
+| 10 | Retrieval service | `apps/api/src/modules/rag/retrieval.service.ts` | ✅ |
+| 11 | RAG module | `apps/api/src/modules/rag/rag.module.ts` | ✅ |
 
 ### Integration
 
 | # | Task | File | Status |
 |---|------|------|--------|
-| 12 | Auto-embed on attraction save/update | Hook in `attraction.service.ts` | ⬜ |
-| 13 | Auto-delete vector on attraction delete | Hook in `attraction.service.ts` | ⬜ |
-| 14 | Register modules in AppModule | `apps/api/src/app.module.ts` | ⬜ |
-| 15 | Install LangChain + Qdrant client | `package.json` | ⬜ |
-| 16 | Update `.env.example` if new vars needed | `.env.example` | ⬜ |
+| 12 | Auto-embed on attraction save/update | Hook in `attraction.service.ts` | ✅ |
+| 13 | Auto-delete vector on attraction delete | Hook in `attraction.service.ts` | ✅ |
+| 14 | Register modules in AppModule | `apps/api/src/app.module.ts` | ✅ |
+| 15 | Install LangChain + Qdrant client | `package.json` | ✅ |
+| 16 | Update `.env.example` if new vars needed | `.env.example` | ✅ |
 
 ---
 
