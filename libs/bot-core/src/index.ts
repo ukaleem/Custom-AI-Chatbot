@@ -10,4 +10,4 @@ export { FollowUpState } from './states/follow-up.state';
 export { OutOfScopeState } from './states/out-of-scope.state';
 export { buildSystemPrompt, buildPlanPrompt } from './prompts/system.prompt';
 export { detectLanguage } from './utils/language-detect';
-export { sanitize } from './utils/sanitize';
+export { sanitizeUserInput, isInjectionAttempt } from './utils/sanitize';

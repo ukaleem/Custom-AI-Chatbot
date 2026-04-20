@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import configuration from './config/configuration';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -9,6 +11,7 @@ import { AttractionsModule } from './modules/attractions/attraction.module';
 import { RagModule } from './modules/rag/rag.module';
 import { LlmModule } from './modules/llm/llm.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -17,6 +20,7 @@ import { SettingsModule } from './modules/settings/settings.module';
       load: [configuration],
       envFilePath: ['.env', '.env.local'],
     }),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -36,6 +40,8 @@ import { SettingsModule } from './modules/settings/settings.module';
     AttractionsModule,
     LlmModule,
     SettingsModule,
+    ChatModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

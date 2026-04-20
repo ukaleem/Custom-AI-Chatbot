@@ -13,6 +13,7 @@ export interface IFlowContext {
   sessionId: string;
   language: string;
   currentState: BotFlowState;
+  botName?: string;
   collectedParams: {
     availableHours?: number;
     preference?: 'culture' | 'entertainment' | 'city-tour';
