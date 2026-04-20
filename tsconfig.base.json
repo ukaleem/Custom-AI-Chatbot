@@ -15,7 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@custom-ai-chatbot/shared-types": ["libs/shared-types/src/index.ts"]
+      "@custom-ai-chatbot/shared-types": ["libs/shared-types/src/index.ts"],
+      "@custom-ai-chatbot/llm-providers": ["libs/llm-providers/src/index.ts"],
+      "@custom-ai-chatbot/bot-core": ["libs/bot-core/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp", "dist"]

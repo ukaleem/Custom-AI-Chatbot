@@ -31,7 +31,7 @@ Always develop on this branch. Never push to `main` without explicit instruction
 | Main DB | MongoDB (Mongoose) | Flexible schema for POI/attraction data |
 | Vector DB | Qdrant | Per-tenant namespaced vector collections for RAG |
 | Cache/Sessions | Redis | Fast session state for conversation flow |
-| RAG Framework | LangChain.js | LLM-agnostic RAG pipeline (Sprint 2) |
+| RAG Framework | LangChain.js | LLM-agnostic RAG pipeline |
 | LLM | Abstracted | Client provides their own API key (OpenAI/Anthropic/Gemini/Mistral) |
 | Admin UI | Angular | Same stack as client's Ionic app |
 | Widget | Angular Web Component | Embeds on any website |
@@ -63,9 +63,9 @@ npm run start:api:dev      # ts-node dev server on :3000
 | Sprint | Name | Status |
 |--------|------|--------|
 | Sprint 1 | Foundation | ✅ COMPLETE |
-| Sprint 2 | Data Layer & RAG Pipeline | 🚀 READY TO START |
-| Sprint 3 | LLM Abstraction & Bot Flow Engine | ⬜ PLANNED |
-| Sprint 4 | Chat API & Session Management | ⬜ PLANNED |
+| Sprint 2 | Data Layer & RAG Pipeline | ✅ COMPLETE |
+| Sprint 3 | LLM Abstraction & Bot Flow Engine | ✅ COMPLETE |
+| Sprint 4 | Chat API & Session Management | 🚀 NEXT |
 | Sprint 5 | Admin Dashboard | ⬜ PLANNED |
 | Sprint 6 | Embeddable Widget | ⬜ PLANNED |
 | Sprint 7 | Billing & SaaS Management | ⬜ PLANNED |
@@ -73,100 +73,113 @@ npm run start:api:dev      # ts-node dev server on :3000
 
 ---
 
-## What Sprint 1 Built (COMPLETE)
+## What Sprint 3 Built (COMPLETE)
 
-### Files Created
-```
-apps/api/src/
-├── main.ts                          # NestJS bootstrap + Swagger setup
-├── app.module.ts                    # Root module (MongoDB + Config)
-├── config/configuration.ts          # Typed env config
-└── modules/
-    ├── health/
-    │   ├── health.controller.ts     # GET /api/v1/health
-    │   └── health.module.ts
-    ├── auth/
-    │   ├── api-key.guard.ts         # Validates x-api-key header → injects req.tenant
-    │   ├── super-admin.guard.ts     # Validates x-admin-key header
-    │   ├── current-tenant.decorator.ts   # @CurrentTenant() param decorator
-    │   └── auth.module.ts
-    └── tenants/
-        ├── schemas/tenant.schema.ts # Mongoose schema: name, slug, apiKey, plan, botConfig, usage
-        ├── dto/create-tenant.dto.ts
-        ├── dto/update-tenant.dto.ts
-        ├── tenant.service.ts        # CRUD + generateApiKey() → "cac_<uuid>"
-        ├── tenant.controller.ts     # All endpoints use SuperAdminGuard
-        └── tenant.module.ts
+### New Libraries
 
-libs/shared-types/src/
-├── tenant.types.ts       # ITenant, TenantPlan, IBotConfig, ITenantUsage
-├── attraction.types.ts   # IAttraction, AttractionCategory, IMultiLangText
-├── conversation.types.ts # IConversation, IMessage, IChatRequest, IChatResponse
-├── bot-flow.types.ts     # BotFlowState, IFlowContext, ILLMProvider interface
-└── index.ts              # Re-exports all types
+```
+libs/llm-providers/src/
+├── openai.provider.ts      # GPT-4o + text-embedding-3-small
+├── anthropic.provider.ts   # Claude Sonnet (no embeddings — uses OpenAI for RAG)
+├── gemini.provider.ts      # Gemini 1.5 Flash + text-embedding-004
+├── mistral.provider.ts     # Mistral Large + mistral-embed
+├── llm.factory.ts          # createLlmProvider() + UnconfiguredLlmProvider
+└── index.ts
+
+libs/bot-core/src/
+├── flow-engine.ts          # FlowEngine: routes states, auto-advances to GENERATE_PLAN
+├── prompts/
+│   └── system.prompt.ts    # buildSystemPrompt() + buildPlanPrompt()
+├── utils/
+│   ├── language-detect.ts  # Regex heuristics (it/de/fr/es) + LLM fallback
+│   └── sanitize.ts         # Blocks 8 prompt injection patterns
+├── states/
+│   ├── greeting.state.ts         # GREETING
+│   ├── ask-duration.state.ts     # ASK_DURATION
+│   ├── ask-preference.state.ts   # ASK_PREFERENCE
+│   ├── ask-food.state.ts         # ASK_FOOD
+│   ├── ask-food-style.state.ts   # ASK_FOOD_STYLE
+│   ├── generate-plan.state.ts    # GENERATE_PLAN — calls RetrievalFn callback
+│   ├── follow-up.state.ts        # FOLLOW_UP — uses message history context
+│   └── out-of-scope.state.ts     # OUT_OF_SCOPE
+└── index.ts
 ```
 
-### Working API Endpoints (all behind SuperAdminGuard `x-admin-key` header)
+### New API Modules
+
 ```
-POST   /api/v1/tenants              → Creates tenant, returns apiKey (save it!)
-GET    /api/v1/tenants              → List all tenants (apiKey excluded)
-GET    /api/v1/tenants/:id          → Get single tenant
-PUT    /api/v1/tenants/:id          → Update tenant / botConfig
-POST   /api/v1/tenants/:id/regenerate-key → New API key
-DELETE /api/v1/tenants/:id          → Deactivate tenant (soft delete)
-GET    /api/v1/health               → MongoDB health check
+apps/api/src/modules/
+├── llm/
+│   ├── llm.service.ts      # forTenant(id) → ILLMProvider
+│   └── llm.module.ts
+└── settings/
+    ├── dto/update-bot-config.dto.ts
+    ├── settings.controller.ts   # PUT /settings/llm  +  PUT /settings/bot
+    └── settings.module.ts
 ```
+
+### New Settings Endpoints (all behind ApiKeyGuard `x-api-key`)
+```
+GET    /api/v1/settings           → botConfig + plan + usage
+PUT    /api/v1/settings/llm       → Set provider, apiKey, model
+PUT    /api/v1/settings/bot       → Update botName, greeting, colors, language
+```
+
+### Key Architectural Decisions in Sprint 3
+
+1. **RetrievalFn pattern** — `GeneratePlanState` receives a callback `(params) => Promise<IAttractionResult[]>` — keeps `bot-core` framework-agnostic (no NestJS imports inside the library)
+2. **Auto-advance** — When any state returns `nextState: 'GENERATE_PLAN'`, the `FlowEngine` immediately calls `GeneratePlanState` without waiting for another user message
+3. **Prompt injection** — Every user input passes through `sanitize()` before hitting any state handler
+4. **LLM key security** — `llmConfig.apiKey` has `select: false` in Mongoose — never returned in any query by default
 
 ---
 
-## What to Build Next — Sprint 2
+## What to Build Next — Sprint 4
 
-**Goal:** Companies can push their attraction data via API. RAG retrieval works per tenant.
+**Goal:** Full REST + WebSocket chat API. Sessions persisted in MongoDB.
 
-See full task list: `project-progress/sprints/sprint-02.md`
+See full task list: `project-progress/sprints/sprint-04.md`
 
-### Key files to create in Sprint 2:
+### Key files to create in Sprint 4:
 ```
-apps/api/src/modules/attractions/
-├── schemas/attraction.schema.ts
-├── dto/create-attraction.dto.ts
-├── dto/update-attraction.dto.ts
-├── dto/bulk-import.dto.ts
-├── attraction.service.ts
-├── attraction.controller.ts
-└── attraction.module.ts
+apps/api/src/modules/chat/
+├── schemas/
+│   ├── conversation.schema.ts    # sessionId, tenantId, state, collectedParams, messages[]
+│   └── message.schema.ts        # role, content, timestamp, quickReplies
+├── session.service.ts           # create, load, save, expire sessions
+├── chat.service.ts              # orchestrates FlowEngine + RetrievalService
+├── chat.controller.ts           # POST /chat/session, POST /chat/message
+├── chat.gateway.ts              # WebSocket gateway
+└── chat.module.ts
+```
 
-apps/api/src/modules/rag/
-├── qdrant.service.ts        # Qdrant client, create/query collections
-├── embedding.service.ts     # Text → vector embeddings
-├── retrieval.service.ts     # RAG query: params → relevant attractions
-└── rag.module.ts
+**Important:** `ChatService` is where `FlowEngine` is instantiated with the `RetrievalFn`:
+```typescript
+const engine = new FlowEngine(
+  (params) => this.retrievalService.search({ ... })
+);
 ```
 
 ---
 
 ## Key Design Decisions
 
-1. **Tenant isolation** — Every query is scoped to `tenantId`. The bot can NEVER return data from another tenant. Qdrant uses collection naming: `attractions_{tenantId}`.
-
-2. **API key auth** — The `ApiKeyGuard` looks up the API key in MongoDB, injects the full `TenantDocument` as `req.tenant`. All downstream services use `req.tenant._id` to scope queries.
-
-3. **LLM keys belong to clients** — We never store our own LLM credentials. Each tenant stores their own provider + API key in their `Tenant` document (added in Sprint 3).
-
-4. **Bot flow is a state machine** — The conversation goes through fixed states: GREETING → ASK_DURATION → ASK_PREFERENCE → ASK_FOOD → ASK_FOOD_STYLE → GENERATE_PLAN. Only after collecting all params does it hit the RAG pipeline.
-
-5. **Multi-language first** — All attraction names/descriptions use `IMultiLangText` (en/it/de/fr/es). The bot auto-detects user language and responds in kind.
-
-6. **Out-of-scope refusal** — If a user asks anything unrelated to tourist guidance, the bot politely declines and redirects to tourist topics.
+1. **Tenant isolation** — Every query is scoped to `tenantId`. Qdrant collections: `attractions_{tenantId}`.
+2. **API key auth** — `ApiKeyGuard` injects full `TenantDocument` as `req.tenant`. All services use `req.tenant._id`.
+3. **LLM keys belong to clients** — Each tenant stores their own provider + API key with `select: false`.
+4. **Bot flow is a state machine** — GREETING → ASK_DURATION → ASK_PREFERENCE → ASK_FOOD → ASK_FOOD_STYLE → GENERATE_PLAN → FOLLOW_UP.
+5. **Multi-language** — Bot auto-detects language via heuristics + LLM fallback. System prompt instructs always respond in user's language.
+6. **Out-of-scope refusal** — `FollowUpState` detects off-topic messages and routes to `OutOfScopeState`.
 
 ---
 
 ## Important: Don't Break These
 
-- `apps/api/src/modules/auth/api-key.guard.ts` — Core security. All bot endpoints must use this guard.
-- `libs/shared-types/src/index.ts` — The shared type contract. Changes affect all apps.
-- `tsconfig.base.json` — Path alias `@custom-ai-chatbot/shared-types` must stay mapped.
-- Tenant `isActive` check — The API key guard also validates `isActive`. Never bypass this.
+- `apps/api/src/modules/auth/api-key.guard.ts` — Core security.
+- `libs/shared-types/src/index.ts` — The shared type contract.
+- `tsconfig.base.json` — Path aliases for all 3 libs must stay mapped.
+- Tenant `isActive` check — Never bypass in guards.
+- `llmConfig.apiKey` has `select: false` — Always use `.select('+llmConfig')` when you need it.
 
 ---
 
@@ -177,11 +190,7 @@ apps/api/src/modules/rag/
 | `AGENT-HANDOFF.md` | **This file** — start here every session |
 | `ROADMAP.md` | All 8 sprints, every task, completion status |
 | `ARCHITECTURE.md` | Full file tree, module map, data flow diagrams |
-| `sprints/sprint-01.md` | Sprint 1 completed task log |
-| `sprints/sprint-02.md` | Sprint 2 task list (ready to start) |
-| `sprints/sprint-03.md` | Sprint 3 planned tasks |
-| `sprints/sprint-04.md` | Sprint 4 planned tasks |
-| `sprints/sprint-05.md` | Sprint 5 planned tasks |
-| `sprints/sprint-06.md` | Sprint 6 planned tasks |
-| `sprints/sprint-07.md` | Sprint 7 planned tasks |
-| `sprints/sprint-08.md` | Sprint 8 planned tasks |
+| `sprints/sprint-01.md` | Sprint 1 completed |
+| `sprints/sprint-02.md` | Sprint 2 completed |
+| `sprints/sprint-03.md` | Sprint 3 completed |
+| `sprints/sprint-04.md` | Sprint 4 — NEXT |
