@@ -23,6 +23,9 @@ export class Tenant {
   @Prop({ default: true })
   isActive: boolean;
 
+  @Prop({ default: '', select: false })
+  adminPasswordHash: string;
+
   @Prop({
     type: {
       botName: { type: String, default: 'Guide' },

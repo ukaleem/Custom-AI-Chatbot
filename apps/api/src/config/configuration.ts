@@ -17,6 +17,7 @@ export default () => ({
 
   security: {
     superAdminKey: process.env.SUPER_ADMIN_KEY ?? '',
+    jwtSecret: process.env.JWT_SECRET ?? 'change-me-in-production',
     allowedOrigins: (process.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean),
   },
 });

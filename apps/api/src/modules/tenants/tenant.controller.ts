@@ -20,6 +20,7 @@ import {
 import { SuperAdminGuard } from '../auth/super-admin.guard';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { SetPasswordDto } from '../admin-auth/dto/set-password.dto';
 import { TenantsService } from './tenant.service';
 
 @ApiTags('Tenants (Super Admin)')
@@ -83,5 +84,12 @@ export class TenantsController {
   @ApiResponse({ status: 204, description: 'Tenant deactivated' })
   deactivate(@Param('id') id: string) {
     return this.tenantsService.deactivate(id);
+  }
+
+  @Post(':id/set-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Set admin dashboard login password for this tenant' })
+  setPassword(@Param('id') id: string, @Body() dto: SetPasswordDto) {
+    return this.tenantsService.setAdminPassword(id, dto.password);
   }
 }
