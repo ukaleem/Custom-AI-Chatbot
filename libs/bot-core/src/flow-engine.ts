@@ -1,5 +1,5 @@
 import { IFlowContext, IStateTransition, ILLMProvider, BotFlowState, RetrievalFn } from '@custom-ai-chatbot/shared-types';
-import { sanitize } from './utils/sanitize';
+import { sanitizeUserInput } from './utils/sanitize';
 import { GreetingState } from './states/greeting.state';
 import { AskDurationState } from './states/ask-duration.state';
 import { AskPreferenceState } from './states/ask-preference.state';
@@ -33,7 +33,7 @@ export class FlowEngine {
     rawInput: string,
     llm: ILLMProvider,
   ): Promise<FlowResult> {
-    const userInput = sanitize(rawInput);
+    const userInput = sanitizeUserInput(rawInput);
 
     const transition = await this.dispatch(context, userInput, llm);
 

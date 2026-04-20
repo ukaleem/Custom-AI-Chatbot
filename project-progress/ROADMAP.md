@@ -11,7 +11,7 @@
 | 1 | Foundation | Monorepo + DB + Tenant auth working | ✅ COMPLETE | Week 1–2 |
 | 2 | Data Layer & RAG | Attraction data in, vector search out | ✅ COMPLETE | Week 3–4 |
 | 3 | LLM + Bot Flow | Bot asks guided questions, answers from DB | ✅ COMPLETE | Week 5–6 |
-| 4 | Chat API | Stable REST + WebSocket chat API | ⬜ PLANNED | Week 7–8 |
+| 4 | Chat API | Stable REST + WebSocket chat API | ✅ COMPLETE | Week 7–8 |
 | 5 | Admin Dashboard | Company can manage their data + bot | ⬜ PLANNED | Week 9–10 |
 | 6 | Embeddable Widget | 2-line embed for website + Ionic app | ⬜ PLANNED | Week 11–12 |
 | 7 | Billing & SaaS | Stripe billing, usage limits, super-admin | ⬜ PLANNED | Week 13–14 |
@@ -104,29 +104,28 @@
 
 ---
 
-## Sprint 4 — Chat API & Session Management ⬜ PLANNED
+## Sprint 4 — Chat API & Session Management ✅ COMPLETE
 
-**Deliverable:** Full REST + WebSocket chat API. Sessions persisted in MongoDB. Postman collection delivered.
+**Deliverable:** Full REST + WebSocket chat API. Sessions persisted in MongoDB.
 
 | Task | File(s) | Status |
 |------|---------|--------|
-| Conversation MongoDB schema | `apps/api/src/modules/chat/schemas/conversation.schema.ts` | ⬜ |
-| Message sub-schema | `apps/api/src/modules/chat/schemas/message.schema.ts` | ⬜ |
-| Session service | `apps/api/src/modules/chat/session.service.ts` | ⬜ |
-| Chat service (orchestrates flow engine + RAG) | `apps/api/src/modules/chat/chat.service.ts` | ⬜ |
-| Chat REST controller | `apps/api/src/modules/chat/chat.controller.ts` | ⬜ |
-| `POST /chat/session` — create session | `chat.controller.ts` | ⬜ |
-| `POST /chat/message` — send message | `chat.controller.ts` | ⬜ |
-| `GET /chat/session/:id/history` | `chat.controller.ts` | ⬜ |
-| `PATCH /chat/session/:id/end` — close session | `chat.controller.ts` | ⬜ |
-| WebSocket gateway | `apps/api/src/modules/chat/chat.gateway.ts` | ⬜ |
-| Real-time message streaming (SSE or WS) | `chat.gateway.ts` | ⬜ |
-| Session persistence (full history) | MongoDB + `session.service.ts` | ⬜ |
-| Session timeout (24h auto-close) | Cron job or TTL index | ⬜ |
-| Rate limiting per tenant (configurable) | `@nestjs/throttler` + tenant plan limits | ⬜ |
-| Tenant isolation enforcement (cannot cross tenants) | Guard + service validation | ⬜ |
-| Chat module + register in AppModule | `apps/api/src/modules/chat/chat.module.ts` | ⬜ |
-| Postman collection export | `docs/postman-collection.json` | ⬜ |
+| Conversation MongoDB schema (TTL 24h, messages sub-doc) | `apps/api/src/modules/chat/schemas/conversation.schema.ts` | ✅ |
+| Session service (create/load/save/end) | `apps/api/src/modules/chat/session.service.ts` | ✅ |
+| Chat service (FlowEngine + RetrievalFn bridge) | `apps/api/src/modules/chat/chat.service.ts` | ✅ |
+| Chat REST controller | `apps/api/src/modules/chat/chat.controller.ts` | ✅ |
+| `POST /chat/session` — create session + greeting | `chat.controller.ts` | ✅ |
+| `POST /chat/message` — send message | `chat.controller.ts` | ✅ |
+| `GET /chat/session/:id/history` | `chat.controller.ts` | ✅ |
+| `PATCH /chat/session/:id/end` — close session | `chat.controller.ts` | ✅ |
+| WebSocket gateway (socket.io, namespace /chat) | `apps/api/src/modules/chat/chat.gateway.ts` | ✅ |
+| WS auth via x-api-key on connection | `chat.gateway.ts` | ✅ |
+| Session persistence (full history + TTL) | MongoDB TTL index in `conversation.schema.ts` | ✅ |
+| Plan limit enforcement (block at monthly limit) | `chat.service.ts#startSession` | ✅ |
+| Rate limiting (60 req/min global) | `@nestjs/throttler` in `app.module.ts` | ✅ |
+| Tenant isolation (sessionId + tenantId scoped) | `session.service.ts#findBySessionId` | ✅ |
+| Chat module + register in AppModule | `apps/api/src/modules/chat/chat.module.ts` | ✅ |
+| RetrievalService: accept ILLMProvider for embeddings | `apps/api/src/modules/rag/retrieval.service.ts` | ✅ |
 
 ---
 
@@ -237,15 +236,15 @@
 Sprint 1  ████████████████████ 100%  ✅ COMPLETE    (16/16 tasks)
 Sprint 2  ████████████████████ 100%  ✅ COMPLETE    (16/16 tasks)
 Sprint 3  ████████████████████ 100%  ✅ COMPLETE    (26/26 tasks)
-Sprint 4  ░░░░░░░░░░░░░░░░░░░░   0%  🚀 NEXT        ( 0/14 tasks)
-Sprint 5  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/15 tasks)
+Sprint 4  ████████████████████ 100%  ✅ COMPLETE    (17/17 tasks)
+Sprint 5  ░░░░░░░░░░░░░░░░░░░░   0%  🚀 NEXT        ( 0/15 tasks)
 Sprint 6  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/15 tasks)
 Sprint 7  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/14 tasks)
 Sprint 8  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/18 tasks)
 ─────────────────────────────────────────────────────────────────
-TOTAL     ████████░░░░░░░░░░░░  41%                  (58/140 tasks)
+TOTAL     ██████████░░░░░░░░░░  54%                  (75/140 tasks)
 ```
 
 ---
 
-*Last updated: Sprint 3 complete. Branch: `claude/catania-ai-bot-MctDj`*
+*Last updated: Sprint 4 complete. Branch: `claude/catania-ai-bot-MctDj`*

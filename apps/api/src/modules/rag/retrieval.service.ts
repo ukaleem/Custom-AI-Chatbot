@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { AttractionCategory, FoodStyle, PriceRange } from '@custom-ai-chatbot/shared-types';
+import { AttractionCategory, FoodStyle, ILLMProvider, PriceRange } from '@custom-ai-chatbot/shared-types';
 import { EmbeddingService } from './embedding.service';
 import { QdrantService } from './qdrant.service';
 
 export interface RetrievalQuery {
   tenantId: string;
   naturalLanguageQuery: string;
-  openAiKey: string;
+  llmProvider?: ILLMProvider;
+  openAiKey?: string;
   filters?: {
     categories?: AttractionCategory[];
     maxDurationMinutes?: number;
@@ -24,7 +25,9 @@ export class RetrievalService {
   ) {}
 
   async search(query: RetrievalQuery) {
-    const vector = await this.embedding.embedQuery(query.naturalLanguageQuery, query.openAiKey);
+    const vector = query.llmProvider
+      ? await query.llmProvider.embed(query.naturalLanguageQuery)
+      : await this.embedding.embedQuery(query.naturalLanguageQuery, query.openAiKey!);
 
     const qdrantFilter = this.buildFilter(query.filters);
 
