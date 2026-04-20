@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "start:api": "nx serve api",
-    "start:api:dev": "ts-node -r tsconfig-paths/register apps/api/src/main.ts",
+    "start:api:dev": "npx ts-node -r tsconfig-paths/register apps/api/src/main.ts",
     "build:api": "nx build api",
     "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
