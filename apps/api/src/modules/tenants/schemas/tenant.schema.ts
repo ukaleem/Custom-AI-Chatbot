@@ -45,6 +45,23 @@ export class Tenant {
 
   @Prop({
     type: {
+      provider: { type: String, enum: ['openai', 'anthropic', 'gemini', 'mistral'], default: 'openai' },
+      apiKey: { type: String, default: '' },
+      model: { type: String, default: '' },
+      embeddingModel: { type: String, default: 'text-embedding-3-small' },
+    },
+    default: {},
+    select: false,
+  })
+  llmConfig: {
+    provider: 'openai' | 'anthropic' | 'gemini' | 'mistral';
+    apiKey: string;
+    model: string;
+    embeddingModel: string;
+  };
+
+  @Prop({
+    type: {
       monthlySessionLimit: { type: Number, default: 500 },
       currentMonthSessions: { type: Number, default: 0 },
       totalSessionsAllTime: { type: Number, default: 0 },

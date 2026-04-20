@@ -25,11 +25,32 @@ export interface IFlowContext {
   }>;
 }
 
+export interface IAttractionResult {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  durationMinutes?: number;
+  priceRange?: string;
+  address?: string;
+  tags?: string[];
+}
+
+export type RetrievalFn = (params: {
+  tenantId: string;
+  preference: string;
+  availableHours: number;
+  wantsFood: boolean;
+  foodStyle?: string;
+}) => Promise<IAttractionResult[]>;
+
 export interface IStateTransition {
   message: string;
   quickReplies?: Array<{ label: string; value: string }>;
   nextState: BotFlowState;
   isTerminal: boolean;
+  collectedParams?: Partial<IFlowContext['collectedParams']>;
+  detectedLanguage?: string;
 }
 
 export interface ILLMMessage {

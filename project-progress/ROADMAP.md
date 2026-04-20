@@ -9,8 +9,8 @@
 | # | Sprint | Goal | Status | Target |
 |---|--------|------|--------|--------|
 | 1 | Foundation | Monorepo + DB + Tenant auth working | ✅ COMPLETE | Week 1–2 |
-| 2 | Data Layer & RAG | Attraction data in, vector search out | 🚀 READY | Week 3–4 |
-| 3 | LLM + Bot Flow | Bot asks guided questions, answers from DB | ⬜ PLANNED | Week 5–6 |
+| 2 | Data Layer & RAG | Attraction data in, vector search out | ✅ COMPLETE | Week 3–4 |
+| 3 | LLM + Bot Flow | Bot asks guided questions, answers from DB | ✅ COMPLETE | Week 5–6 |
 | 4 | Chat API | Stable REST + WebSocket chat API | ⬜ PLANNED | Week 7–8 |
 | 5 | Admin Dashboard | Company can manage their data + bot | ⬜ PLANNED | Week 9–10 |
 | 6 | Embeddable Widget | 2-line embed for website + Ionic app | ⬜ PLANNED | Week 11–12 |
@@ -43,62 +43,64 @@
 
 ---
 
-## Sprint 2 — Data Layer & RAG Pipeline 🚀 READY TO START
+## Sprint 2 — Data Layer & RAG Pipeline ✅ COMPLETE
 
 **Deliverable:** Company A pushes Catania attractions via API. Similarity search returns only their registered spots filtered by category.
 
 | Task | File(s) | Status |
 |------|---------|--------|
-| Attraction MongoDB schema | `apps/api/src/modules/attractions/schemas/attraction.schema.ts` | ⬜ |
-| Create attraction DTO | `apps/api/src/modules/attractions/dto/create-attraction.dto.ts` | ⬜ |
-| Update attraction DTO | `apps/api/src/modules/attractions/dto/update-attraction.dto.ts` | ⬜ |
-| Bulk import DTO | `apps/api/src/modules/attractions/dto/bulk-import.dto.ts` | ⬜ |
-| Attraction CRUD service | `apps/api/src/modules/attractions/attraction.service.ts` | ⬜ |
-| Attraction REST controller | `apps/api/src/modules/attractions/attraction.controller.ts` | ⬜ |
-| Bulk import endpoint (100 max) | `POST /api/v1/attractions/bulk` | ⬜ |
-| Re-index endpoint | `POST /api/v1/attractions/reindex` | ⬜ |
-| Attractions module | `apps/api/src/modules/attractions/attraction.module.ts` | ⬜ |
-| Qdrant service (create/delete collections) | `apps/api/src/modules/rag/qdrant.service.ts` | ⬜ |
-| Embedding service (text → vector) | `apps/api/src/modules/rag/embedding.service.ts` | ⬜ |
-| Retrieval service (RAG query per tenant) | `apps/api/src/modules/rag/retrieval.service.ts` | ⬜ |
-| RAG module | `apps/api/src/modules/rag/rag.module.ts` | ⬜ |
-| Auto-embed on attraction save | Hook in `attraction.service.ts` | ⬜ |
-| Category + duration filter on retrieval | `retrieval.service.ts` | ⬜ |
-| Register attractions + RAG modules in AppModule | `apps/api/src/app.module.ts` | ⬜ |
+| Attraction MongoDB schema | `apps/api/src/modules/attractions/schemas/attraction.schema.ts` | ✅ |
+| Create attraction DTO | `apps/api/src/modules/attractions/dto/create-attraction.dto.ts` | ✅ |
+| Update attraction DTO | `apps/api/src/modules/attractions/dto/update-attraction.dto.ts` | ✅ |
+| Bulk import DTO | `apps/api/src/modules/attractions/dto/bulk-import.dto.ts` | ✅ |
+| Attraction CRUD service | `apps/api/src/modules/attractions/attraction.service.ts` | ✅ |
+| Attraction REST controller | `apps/api/src/modules/attractions/attraction.controller.ts` | ✅ |
+| Bulk import endpoint (100 max) | `POST /api/v1/attractions/bulk` | ✅ |
+| Re-index endpoint | `POST /api/v1/attractions/reindex` | ✅ |
+| Attractions module | `apps/api/src/modules/attractions/attraction.module.ts` | ✅ |
+| Qdrant service (create/delete collections) | `apps/api/src/modules/rag/qdrant.service.ts` | ✅ |
+| Embedding service (text → vector) | `apps/api/src/modules/rag/embedding.service.ts` | ✅ |
+| Retrieval service (RAG query per tenant) | `apps/api/src/modules/rag/retrieval.service.ts` | ✅ |
+| RAG module | `apps/api/src/modules/rag/rag.module.ts` | ✅ |
+| Auto-embed on attraction save | Hook in `attraction.service.ts` | ✅ |
+| Category + duration filter on retrieval | `retrieval.service.ts` | ✅ |
+| Register attractions + RAG modules in AppModule | `apps/api/src/app.module.ts` | ✅ |
 
 ---
 
-## Sprint 3 — LLM Abstraction & Bot Flow Engine ⬜ PLANNED
+## Sprint 3 — LLM Abstraction & Bot Flow Engine ✅ COMPLETE
 
 **Deliverable:** Bot conversation works end-to-end. Asks all 4 guided questions in the user's language. Only registered attractions are suggested.
 
 | Task | File(s) | Status |
 |------|---------|--------|
-| `ILLMProvider` interface | `libs/shared-types/src/bot-flow.types.ts` (already defined) | ✅ |
-| OpenAI provider | `libs/llm-providers/src/openai.provider.ts` | ⬜ |
-| Anthropic provider | `libs/llm-providers/src/anthropic.provider.ts` | ⬜ |
-| Google Gemini provider | `libs/llm-providers/src/gemini.provider.ts` | ⬜ |
-| Mistral provider | `libs/llm-providers/src/mistral.provider.ts` | ⬜ |
-| LLM factory (switch by tenant config) | `libs/llm-providers/src/llm.factory.ts` | ⬜ |
-| LLM providers lib `index.ts` | `libs/llm-providers/src/index.ts` | ⬜ |
-| LLM providers `project.json` + tsconfig | `libs/llm-providers/` | ⬜ |
-| Store LLM config per tenant in DB | Add `llmConfig` field to `Tenant` schema | ⬜ |
-| LLM config update endpoint | `PUT /api/v1/tenants/:id/llm-config` | ⬜ |
-| Flow engine core | `libs/bot-core/src/flow-engine.ts` | ⬜ |
-| GREETING state | `libs/bot-core/src/states/greeting.state.ts` | ⬜ |
-| ASK_DURATION state | `libs/bot-core/src/states/ask-duration.state.ts` | ⬜ |
-| ASK_PREFERENCE state | `libs/bot-core/src/states/ask-preference.state.ts` | ⬜ |
-| ASK_FOOD state | `libs/bot-core/src/states/ask-food.state.ts` | ⬜ |
-| ASK_FOOD_STYLE state | `libs/bot-core/src/states/ask-food-style.state.ts` | ⬜ |
-| GENERATE_PLAN state | `libs/bot-core/src/states/generate-plan.state.ts` | ⬜ |
-| FOLLOW_UP state | `libs/bot-core/src/states/follow-up.state.ts` | ⬜ |
-| OUT_OF_SCOPE handler | `libs/bot-core/src/states/out-of-scope.state.ts` | ⬜ |
-| Bot core lib `index.ts` | `libs/bot-core/src/index.ts` | ⬜ |
-| Bot core `project.json` + tsconfig | `libs/bot-core/` | ⬜ |
-| Language auto-detect (LLM or heuristic) | `libs/bot-core/src/utils/language-detect.ts` | ⬜ |
-| Prompt templates per state (6 languages) | `libs/bot-core/src/prompts/` | ⬜ |
-| System prompt (tourist guide persona) | `libs/bot-core/src/prompts/system.prompt.ts` | ⬜ |
-| Update `tsconfig.base.json` path aliases | Add `@custom-ai-chatbot/bot-core`, `@custom-ai-chatbot/llm-providers` | ⬜ |
+| `ILLMProvider` interface + `RetrievalFn` type | `libs/shared-types/src/bot-flow.types.ts` | ✅ |
+| OpenAI provider | `libs/llm-providers/src/openai.provider.ts` | ✅ |
+| Anthropic provider | `libs/llm-providers/src/anthropic.provider.ts` | ✅ |
+| Google Gemini provider | `libs/llm-providers/src/gemini.provider.ts` | ✅ |
+| Mistral provider | `libs/llm-providers/src/mistral.provider.ts` | ✅ |
+| LLM factory (switch by tenant config) | `libs/llm-providers/src/llm.factory.ts` | ✅ |
+| LLM providers lib `index.ts` | `libs/llm-providers/src/index.ts` | ✅ |
+| Store LLM config per tenant in DB | `llmConfig` field in `Tenant` schema (select: false) | ✅ |
+| LLM settings endpoint | `PUT /api/v1/settings/llm` | ✅ |
+| Bot settings endpoint | `PUT /api/v1/settings/bot` | ✅ |
+| Settings module | `apps/api/src/modules/settings/` | ✅ |
+| LLM service (forTenant factory) | `apps/api/src/modules/llm/llm.service.ts` | ✅ |
+| LLM module | `apps/api/src/modules/llm/llm.module.ts` | ✅ |
+| Flow engine core (auto-advance to GENERATE_PLAN) | `libs/bot-core/src/flow-engine.ts` | ✅ |
+| GREETING state | `libs/bot-core/src/states/greeting.state.ts` | ✅ |
+| ASK_DURATION state | `libs/bot-core/src/states/ask-duration.state.ts` | ✅ |
+| ASK_PREFERENCE state | `libs/bot-core/src/states/ask-preference.state.ts` | ✅ |
+| ASK_FOOD state | `libs/bot-core/src/states/ask-food.state.ts` | ✅ |
+| ASK_FOOD_STYLE state | `libs/bot-core/src/states/ask-food-style.state.ts` | ✅ |
+| GENERATE_PLAN state (calls retrieval callback) | `libs/bot-core/src/states/generate-plan.state.ts` | ✅ |
+| FOLLOW_UP state | `libs/bot-core/src/states/follow-up.state.ts` | ✅ |
+| OUT_OF_SCOPE handler | `libs/bot-core/src/states/out-of-scope.state.ts` | ✅ |
+| Bot core lib `index.ts` | `libs/bot-core/src/index.ts` | ✅ |
+| Language auto-detect (heuristic + LLM fallback) | `libs/bot-core/src/utils/language-detect.ts` | ✅ |
+| Prompt injection protection | `libs/bot-core/src/utils/sanitize.ts` | ✅ |
+| System prompt (tourist guide persona) | `libs/bot-core/src/prompts/system.prompt.ts` | ✅ |
+| Update `tsconfig.base.json` path aliases | Added `@custom-ai-chatbot/bot-core` + `@custom-ai-chatbot/llm-providers` | ✅ |
 
 ---
 
@@ -233,17 +235,17 @@
 
 ```
 Sprint 1  ████████████████████ 100%  ✅ COMPLETE    (16/16 tasks)
-Sprint 2  ░░░░░░░░░░░░░░░░░░░░   0%  🚀 NEXT        ( 0/16 tasks)
-Sprint 3  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/25 tasks)
-Sprint 4  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/18 tasks)
-Sprint 5  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/18 tasks)
+Sprint 2  ████████████████████ 100%  ✅ COMPLETE    (16/16 tasks)
+Sprint 3  ████████████████████ 100%  ✅ COMPLETE    (26/26 tasks)
+Sprint 4  ░░░░░░░░░░░░░░░░░░░░   0%  🚀 NEXT        ( 0/14 tasks)
+Sprint 5  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/15 tasks)
 Sprint 6  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/15 tasks)
 Sprint 7  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/14 tasks)
 Sprint 8  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/18 tasks)
 ─────────────────────────────────────────────────────────────────
-TOTAL     ██░░░░░░░░░░░░░░░░░░   8%                  (16/140 tasks)
+TOTAL     ████████░░░░░░░░░░░░  41%                  (58/140 tasks)
 ```
 
 ---
 
-*Last updated: Sprint 1 complete. Branch: `claude/catania-ai-bot-MctDj`*
+*Last updated: Sprint 3 complete. Branch: `claude/catania-ai-bot-MctDj`*

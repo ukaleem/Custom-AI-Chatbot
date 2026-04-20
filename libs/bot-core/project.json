@@ -1,0 +1,18 @@
+{
+  "name": "bot-core",
+  "$schema": "../../node_modules/nx/schemas/project.json",
+  "sourceRoot": "libs/bot-core/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:logic"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/bot-core",
+        "main": "libs/bot-core/src/index.ts",
+        "tsConfig": "libs/bot-core/tsconfig.lib.json"
+      }
+    }
+  }
+}
