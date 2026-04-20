@@ -12,6 +12,8 @@ import { RagModule } from './modules/rag/rag.module';
 import { LlmModule } from './modules/llm/llm.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { AdminAuthModule } from './modules/admin-auth/admin-auth.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { ChatModule } from './modules/chat/chat.module';
     LlmModule,
     SettingsModule,
     ChatModule,
+    AdminAuthModule,
+    AnalyticsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
