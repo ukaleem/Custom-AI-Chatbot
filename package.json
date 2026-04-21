@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start:api": "nx serve api",
-    "start:api:dev": "npx ts-node -r tsconfig-paths/register apps/api/src/main.ts",
+    "start:api:dev": "npx ts-node --project apps/api/tsconfig.app.json -r tsconfig-paths/register apps/api/src/main.ts",
     "build:api": "nx build api",
     "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",
