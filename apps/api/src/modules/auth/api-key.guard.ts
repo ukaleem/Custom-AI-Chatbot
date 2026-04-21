@@ -1,9 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { TenantsService } from '../tenants/tenant.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Tenant, TenantDocument } from '../tenants/schemas/tenant.schema';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
-  constructor(private readonly tenantsService: TenantsService) {}
+  constructor(
+    @InjectModel(Tenant.name) private readonly tenantModel: Model<TenantDocument>,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -13,7 +17,7 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException('API key required in x-api-key header');
     }
 
-    const tenant = await this.tenantsService.findByApiKey(apiKey);
+    const tenant = await this.tenantModel.findOne({ apiKey }).exec();
 
     if (!tenant) {
       throw new UnauthorizedException('Invalid API key');
