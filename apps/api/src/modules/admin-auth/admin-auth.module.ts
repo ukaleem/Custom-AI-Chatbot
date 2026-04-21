@@ -22,7 +22,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
       inject: [ConfigService],
     }),
   ],
-  providers: [AdminAuthService, JwtStrategy],
+  providers: [AdminAuthService, JwtStrategy, JwtAuthGuard],
   controllers: [AdminAuthController],
   exports: [JwtAuthGuard, JwtModule],
 })
