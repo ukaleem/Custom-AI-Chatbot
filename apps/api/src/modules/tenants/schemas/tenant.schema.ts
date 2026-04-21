@@ -84,5 +84,5 @@ export class Tenant {
 
 export const TenantSchema = SchemaFactory.createForClass(Tenant);
 
-TenantSchema.index({ apiKey: 1 }, { unique: true });
-TenantSchema.index({ slug: 1 }, { unique: true });
+// TenantSchema.index({ apiKey: 1 }, { unique: true });
+// TenantSchema.index({ slug: 1 }, { unique: true });
