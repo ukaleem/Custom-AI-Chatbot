@@ -6,6 +6,8 @@
     "start:api": "nx serve api",
     "start:api:dev": "npx ts-node --project apps/api/tsconfig.app.json -r tsconfig-paths/register apps/api/src/main.ts",
     "build:api": "nx build api",
+    "build:widget": "node apps/widget/build.js --production",
+    "build:widget:dev": "node apps/widget/build.js --watch",
     "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",
     "docker:up": "docker compose up -d",

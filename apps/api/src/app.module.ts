@@ -14,6 +14,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AdminAuthModule } from './modules/admin-auth/admin-auth.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { WidgetModule } from './modules/widget/widget.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     ChatModule,
     AdminAuthModule,
     AnalyticsModule,
+    WidgetModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

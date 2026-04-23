@@ -7,6 +7,6 @@ import { Tenant, TenantSchema } from '../tenants/schemas/tenant.schema';
 @Module({
   imports: [MongooseModule.forFeature([{ name: Tenant.name, schema: TenantSchema }])],
   providers: [SuperAdminGuard, ApiKeyGuard],
-  exports: [SuperAdminGuard, ApiKeyGuard],
+  exports: [SuperAdminGuard, ApiKeyGuard, MongooseModule],
 })
 export class AuthModule {}

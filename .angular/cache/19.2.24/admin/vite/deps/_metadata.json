@@ -1,0 +1,76 @@
+{
+  "hash": "73885b17",
+  "configHash": "ab5f33ac",
+  "lockfileHash": "9182789f",
+  "browserHash": "d97d92b4",
+  "optimized": {
+    "@angular/common": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
+      "file": "@angular_common.js",
+      "fileHash": "dca0aa21",
+      "needsInterop": false
+    },
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "1c9e8f2d",
+      "needsInterop": false
+    },
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "975db655",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "7fd9c01e",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "3ca17636",
+      "needsInterop": false
+    },
+    "@angular/router": {
+      "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
+      "file": "@angular_router.js",
+      "fileHash": "3f239ea8",
+      "needsInterop": false
+    },
+    "rxjs/operators": {
+      "src": "../../../../../../node_modules/rxjs/dist/esm5/operators/index.js",
+      "file": "rxjs_operators.js",
+      "fileHash": "2ec3b7e8",
+      "needsInterop": false
+    },
+    "zone.js": {
+      "src": "../../../../../../node_modules/zone.js/fesm2015/zone.js",
+      "file": "zone__js.js",
+      "fileHash": "9d309bb9",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-6MYPNMIB": {
+      "file": "chunk-6MYPNMIB.js"
+    },
+    "chunk-DXUHWWCI": {
+      "file": "chunk-DXUHWWCI.js"
+    },
+    "chunk-FSRYOBWH": {
+      "file": "chunk-FSRYOBWH.js"
+    },
+    "chunk-ZTDI7TM7": {
+      "file": "chunk-ZTDI7TM7.js"
+    },
+    "chunk-A5XPTPIU": {
+      "file": "chunk-A5XPTPIU.js"
+    },
+    "chunk-ENKXLMPR": {
+      "file": "chunk-ENKXLMPR.js"
+    }
+  }
+}
