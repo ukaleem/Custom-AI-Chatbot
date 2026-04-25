@@ -1,16 +1,16 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Put, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { JwtAuthGuard } from '../admin-auth/jwt-auth.guard';
 import { CurrentTenant } from '../auth/current-tenant.decorator';
 import { Tenant, TenantDocument } from '../tenants/schemas/tenant.schema';
 import { UpdateLlmConfigDto } from '../tenants/dto/update-llm-config.dto';
 import { UpdateBotConfigDto } from './dto/update-bot-config.dto';
 
 @ApiTags('Settings')
-@ApiSecurity('tenant-api-key')
-@UseGuards(ApiKeyGuard)
+@ApiBearerAuth('admin-jwt')
+@UseGuards(JwtAuthGuard)
 @Controller('settings')
 export class SettingsController {
   constructor(

@@ -46,6 +46,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addApiKey({ type: 'apiKey', in: 'header', name: 'x-api-key' }, 'tenant-api-key')
     .addApiKey({ type: 'apiKey', in: 'header', name: 'x-admin-key' }, 'super-admin-key')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'admin-jwt')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
