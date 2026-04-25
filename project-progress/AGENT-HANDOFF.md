@@ -65,10 +65,10 @@ npm run start:api:dev      # ts-node dev server on :3000
 | Sprint 1 | Foundation | ✅ COMPLETE |
 | Sprint 2 | Data Layer & RAG Pipeline | ✅ COMPLETE |
 | Sprint 3 | LLM Abstraction & Bot Flow Engine | ✅ COMPLETE |
-| Sprint 4 | Chat API & Session Management | 🚀 NEXT |
-| Sprint 5 | Admin Dashboard | ⬜ PLANNED |
-| Sprint 6 | Embeddable Widget | ⬜ PLANNED |
-| Sprint 7 | Billing & SaaS Management | ⬜ PLANNED |
+| Sprint 4 | Chat API & Session Management | ✅ COMPLETE |
+| Sprint 5 | Admin Dashboard | ✅ COMPLETE |
+| Sprint 6 | Embeddable Widget | ✅ COMPLETE |
+| Sprint 7 | Billing & SaaS Management | 🚀 NEXT |
 | Sprint 8 | Testing, Security & Deployment | ⬜ PLANNED |
 
 ---

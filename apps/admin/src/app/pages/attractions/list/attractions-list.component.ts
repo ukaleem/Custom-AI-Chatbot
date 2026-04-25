@@ -14,7 +14,10 @@ interface Attraction { _id: string; name: { en: string }; category: string; pric
   template: `
     <div class="page-header">
       <h1 class="page-title">Attractions ({{ total() }})</h1>
-      <a routerLink="/attractions/new" class="btn btn-primary">+ Add Attraction</a>
+      <div style="display:flex;gap:8px">
+        <a routerLink="/attractions/import" class="btn btn-outline">Import CSV</a>
+        <a routerLink="/attractions/new" class="btn btn-primary">+ Add Attraction</a>
+      </div>
     </div>
 
     <div class="card" style="margin-bottom:16px;padding:16px">

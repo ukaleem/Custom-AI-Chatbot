@@ -12,6 +12,7 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: 'attractions', loadComponent: () => import('./pages/attractions/list/attractions-list.component').then(m => m.AttractionsListComponent) },
       { path: 'attractions/new', loadComponent: () => import('./pages/attractions/form/attraction-form.component').then(m => m.AttractionFormComponent) },
+      { path: 'attractions/import', loadComponent: () => import('./pages/attractions/import/attraction-import.component').then(m => m.AttractionImportComponent) },
       { path: 'attractions/:id/edit', loadComponent: () => import('./pages/attractions/form/attraction-form.component').then(m => m.AttractionFormComponent) },
       { path: 'conversations', loadComponent: () => import('./pages/conversations/conversations.component').then(m => m.ConversationsComponent) },
       { path: 'settings/bot', loadComponent: () => import('./pages/settings/bot/bot-settings.component').then(m => m.BotSettingsComponent) },

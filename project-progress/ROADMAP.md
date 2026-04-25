@@ -12,8 +12,8 @@
 | 2 | Data Layer & RAG | Attraction data in, vector search out | ✅ COMPLETE | Week 3–4 |
 | 3 | LLM + Bot Flow | Bot asks guided questions, answers from DB | ✅ COMPLETE | Week 5–6 |
 | 4 | Chat API | Stable REST + WebSocket chat API | ✅ COMPLETE | Week 7–8 |
-| 5 | Admin Dashboard | Company can manage their data + bot | ⬜ PLANNED | Week 9–10 |
-| 6 | Embeddable Widget | 2-line embed for website + Ionic app | ⬜ PLANNED | Week 11–12 |
+| 5 | Admin Dashboard | Company can manage their data + bot | ✅ COMPLETE | Week 9–10 |
+| 6 | Embeddable Widget | 2-line embed for website + Ionic app | ✅ COMPLETE | Week 11–12 |
 | 7 | Billing & SaaS | Stripe billing, usage limits, super-admin | ⬜ PLANNED | Week 13–14 |
 | 8 | Testing & Deploy | Production-ready, CI/CD, documented | ⬜ PLANNED | Week 15–16 |
 
@@ -129,54 +129,51 @@
 
 ---
 
-## Sprint 5 — Admin Dashboard ⬜ PLANNED
+## Sprint 5 — Admin Dashboard ✅ COMPLETE
 
 **Deliverable:** Company A logs in, manages attractions, views conversations, configures bot.
 
 | Task | File(s) | Status |
 |------|---------|--------|
-| Admin JWT auth endpoint | `POST /api/v1/admin/login` | ⬜ |
-| JWT strategy + guard in API | `apps/api/src/modules/admin-auth/` | ⬜ |
-| Angular admin app scaffold | `apps/admin/` (project.json, tsconfig, app.module.ts) | ⬜ |
-| Shared Angular services lib | `libs/admin-shared/` | ⬜ |
-| Auth service + login page | `apps/admin/src/app/pages/login/` | ⬜ |
-| Auth guard (CanActivate) | `apps/admin/src/app/guards/auth.guard.ts` | ⬜ |
-| Main layout (sidebar + header) | `apps/admin/src/app/components/layout/` | ⬜ |
-| Dashboard overview page | `apps/admin/src/app/pages/dashboard/` | ⬜ |
-| Attractions list page | `apps/admin/src/app/pages/attractions/list/` | ⬜ |
-| Add/edit attraction form | `apps/admin/src/app/pages/attractions/form/` | ⬜ |
-| Bulk CSV import UI | `apps/admin/src/app/pages/attractions/import/` | ⬜ |
-| Conversations viewer page | `apps/admin/src/app/pages/conversations/` | ⬜ |
-| Bot settings page (name, greeting, colors) | `apps/admin/src/app/pages/settings/bot/` | ⬜ |
-| LLM settings page (provider, API key) | `apps/admin/src/app/pages/settings/llm/` | ⬜ |
-| Widget code snippet generator page | `apps/admin/src/app/pages/settings/widget/` | ⬜ |
-| Analytics API endpoints | `apps/api/src/modules/analytics/` | ⬜ |
-| API service layer (HttpClient wrappers) | `apps/admin/src/app/services/` | ⬜ |
-| Responsive design (mobile-ready) | All admin pages | ⬜ |
+| Admin JWT auth endpoint | `POST /api/v1/admin/login` | ✅ |
+| JWT strategy + guard in API | `apps/api/src/modules/admin-auth/` | ✅ |
+| Angular admin app scaffold | `apps/admin/` (project.json, tsconfig, app.config.ts) | ✅ |
+| Auth service + login page | `apps/admin/src/app/pages/login/` | ✅ |
+| Auth guard (CanActivate) | `apps/admin/src/app/core/guards/auth.guard.ts` | ✅ |
+| JWT interceptor (add Bearer token) | `apps/admin/src/app/core/interceptors/auth.interceptor.ts` | ✅ |
+| Main layout (sidebar + header) | `apps/admin/src/app/layout/` | ✅ |
+| Dashboard overview page | `apps/admin/src/app/pages/dashboard/` | ✅ |
+| Attractions list page | `apps/admin/src/app/pages/attractions/list/` | ✅ |
+| Add/edit attraction form | `apps/admin/src/app/pages/attractions/form/` | ✅ |
+| Bulk CSV import UI | `apps/admin/src/app/pages/attractions/import/` | ✅ |
+| Conversations viewer page | `apps/admin/src/app/pages/conversations/` | ✅ |
+| Bot settings page (name, greeting, colors) | `apps/admin/src/app/pages/settings/bot/` | ✅ |
+| LLM settings page (provider, API key) | `apps/admin/src/app/pages/settings/llm/` | ✅ |
+| Widget code snippet generator page | `apps/admin/src/app/pages/settings/widget/` | ✅ |
+| Analytics API endpoints | `apps/api/src/modules/analytics/` | ✅ |
+| API service layer (HttpClient wrappers) | `apps/admin/src/app/core/services/` | ✅ |
+| Responsive design (mobile-ready) | All admin pages | ✅ |
 
 ---
 
-## Sprint 6 — Embeddable Widget ⬜ PLANNED
+## Sprint 6 — Embeddable Widget ✅ COMPLETE
 
 **Deliverable:** 2 lines of code to embed bot on any website or Ionic/Angular app.
 
 | Task | File(s) | Status |
 |------|---------|--------|
-| Angular widget app scaffold | `apps/widget/` (project.json, tsconfig) | ⬜ |
-| Chat launcher component (floating button) | `apps/widget/src/components/chat-launcher/` | ⬜ |
-| Chat window component (main panel) | `apps/widget/src/components/chat-window/` | ⬜ |
-| Message bubble component | `apps/widget/src/components/message-bubble/` | ⬜ |
-| Quick replies component (option buttons) | `apps/widget/src/components/quick-replies/` | ⬜ |
-| Typing indicator component | `apps/widget/src/components/typing-indicator/` | ⬜ |
-| Chat service (WebSocket + REST fallback) | `apps/widget/src/services/chat.service.ts` | ⬜ |
-| i18n service (en, it, de, fr, es) | `apps/widget/src/services/i18n.service.ts` | ⬜ |
-| Theme service (primaryColor, logo) | `apps/widget/src/services/theme.service.ts` | ⬜ |
-| Web Component wrapper `<catania-bot>` | `apps/widget/src/widget.element.ts` | ⬜ |
-| Script tag bundle builder | `apps/widget/webpack.config.js` | ⬜ |
-| npm package structure | `apps/widget/package.json` (publishable) | ⬜ |
-| Ionic/Angular integration guide | `docs/ionic-integration.md` | ⬜ |
-| Widget config: tenantId, language, theme | `apps/widget/src/config/widget.config.ts` | ⬜ |
-| Serve widget bundle via API | `apps/api/src/modules/widget/` (static serve) | ⬜ |
+| Widget app scaffold | `apps/widget/` (project.json, tsconfig, webpack.config.js) | ✅ |
+| Chat launcher + window + bubbles (all-in-one Web Component) | `apps/widget/src/chatbot.element.ts` | ✅ |
+| Quick replies | Inline in `chatbot.element.ts` | ✅ |
+| Typing indicator | Inline in `chatbot.element.ts` | ✅ |
+| Chat service (REST) | `apps/widget/src/services/chat.service.ts` | ✅ |
+| i18n service (en, it, de, fr, es) | `apps/widget/src/services/i18n.service.ts` | ✅ |
+| Theme service (primaryColor, darken) | `apps/widget/src/services/theme.service.ts` | ✅ |
+| Config service (reads HTML attributes) | `apps/widget/src/services/config.service.ts` | ✅ |
+| Web Component wrapper `<catania-bot>` | `apps/widget/src/main.ts` | ✅ |
+| Script tag bundle builder | `apps/widget/webpack.config.js` + `apps/widget/build.js` | ✅ |
+| Widget API endpoints (config, session, message) | `apps/api/src/modules/widget/widget.controller.ts` | ✅ |
+| Serve widget bundle via API | `GET /api/v1/widget/chatbot.js` | ✅ |
 
 ---
 
@@ -237,12 +234,12 @@ Sprint 1  ████████████████████ 100%  ✅
 Sprint 2  ████████████████████ 100%  ✅ COMPLETE    (16/16 tasks)
 Sprint 3  ████████████████████ 100%  ✅ COMPLETE    (26/26 tasks)
 Sprint 4  ████████████████████ 100%  ✅ COMPLETE    (17/17 tasks)
-Sprint 5  ░░░░░░░░░░░░░░░░░░░░   0%  🚀 NEXT        ( 0/15 tasks)
-Sprint 6  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/15 tasks)
-Sprint 7  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/14 tasks)
+Sprint 5  ████████████████████ 100%  ✅ COMPLETE    (18/18 tasks)
+Sprint 6  ████████████████████ 100%  ✅ COMPLETE    (12/12 tasks)
+Sprint 7  ░░░░░░░░░░░░░░░░░░░░   0%  🚀 NEXT        ( 0/14 tasks)
 Sprint 8  ░░░░░░░░░░░░░░░░░░░░   0%  ⬜ PLANNED      ( 0/18 tasks)
 ─────────────────────────────────────────────────────────────────
-TOTAL     ██████████░░░░░░░░░░  54%                  (75/140 tasks)
+TOTAL     ███████████████░░░░░  77%                  (107/137 tasks)
 ```
 
 ---

@@ -11,7 +11,8 @@
       "options": {
         "outputPath": "dist/libs/llm-providers",
         "main": "libs/llm-providers/src/index.ts",
-        "tsConfig": "libs/llm-providers/tsconfig.lib.json"
+        "tsConfig": "libs/llm-providers/tsconfig.lib.json",
+        "rootDir": "."
       }
     }
   }

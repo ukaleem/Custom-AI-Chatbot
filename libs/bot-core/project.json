@@ -11,7 +11,8 @@
       "options": {
         "outputPath": "dist/libs/bot-core",
         "main": "libs/bot-core/src/index.ts",
-        "tsConfig": "libs/bot-core/tsconfig.lib.json"
+        "tsConfig": "libs/bot-core/tsconfig.lib.json",
+        "rootDir": "."
       }
     }
   }
