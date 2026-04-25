@@ -159,6 +159,28 @@ export class CataniaBotElement extends HTMLElement {
     this.i18n = new I18nService(this.config.language);
     this.render();
     this.initialized = true;
+    this.loadRemoteConfig();
+  }
+
+  private async loadRemoteConfig() {
+    try {
+      const remote = await this.chatService.getConfig();
+      let changed = false;
+      if (!this.getAttribute('bot-name') && remote.botName) {
+        this.config = { ...this.config, botName: remote.botName };
+        changed = true;
+      }
+      if (!this.getAttribute('primary-color') && remote.primaryColor) {
+        this.config = { ...this.config, primaryColor: remote.primaryColor };
+        changed = true;
+      }
+      if (this.config.language === 'auto' && remote.defaultLanguage) {
+        this.i18n = new I18nService(remote.defaultLanguage);
+      }
+      if (changed) this.render();
+    } catch {
+      // silently fall back to attribute/default values
+    }
   }
 
   attributeChangedCallback() {

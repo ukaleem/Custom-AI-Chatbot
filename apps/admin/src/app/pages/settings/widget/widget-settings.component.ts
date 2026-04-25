@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-widget-settings',
@@ -54,7 +55,8 @@ export class WidgetSettingsComponent {
 
   snippet(): string {
     const slug = this.auth.session()?.tenant?.slug ?? 'YOUR_SLUG';
-    return `<script src="https://YOUR_DOMAIN/widget/chatbot.js"></script>\n<catania-bot tenant-id="${slug}" language="auto"></catania-bot>`;
+    const origin = environment.apiUrl.replace('/api/v1', '');
+    return `<script src="${origin}/widget/chatbot.js"></script>\n<catania-bot tenant-id="${slug}" language="auto" api-url="${origin}"></catania-bot>`;
   }
 
   ionicSnippet(): string {

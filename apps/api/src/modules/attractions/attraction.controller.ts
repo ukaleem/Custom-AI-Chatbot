@@ -8,9 +8,10 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiSecurity, ApiOperation } from '@nestjs/swagger';
+import { ApiQuery, ApiTags, ApiSecurity, ApiOperation } from '@nestjs/swagger';
 import { AttractionService } from './attraction.service';
 import { CreateAttractionDto } from './dto/create-attraction.dto';
 import { UpdateAttractionDto } from './dto/update-attraction.dto';
@@ -45,9 +46,21 @@ export class AttractionController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all active attractions for this tenant' })
-  findAll(@CurrentTenant() tenant: TenantDocument) {
-    return this.service.findAll(tenant.id);
+  @ApiOperation({ summary: 'List attractions for this tenant (paginated)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  findAll(
+    @CurrentTenant() tenant: TenantDocument,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.service.findAll(tenant.id, {
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 20,
+      search: search ?? '',
+    });
   }
 
   @Get(':id')
