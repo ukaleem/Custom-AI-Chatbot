@@ -5,6 +5,11 @@
   "projectType": "library",
   "tags": ["scope:shared", "type:providers"],
   "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/llm-providers"],
+      "options": { "jestConfig": "libs/llm-providers/jest.config.ts", "passWithNoTests": true }
+    },
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],

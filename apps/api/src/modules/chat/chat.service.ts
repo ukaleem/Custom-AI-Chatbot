@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpStatus, HttpException } from '@nestjs/common';
 import { FlowEngine } from '@custom-ai-chatbot/bot-core';
 import { AttractionCategory, IAttractionResult, RetrievalFn } from '@custom-ai-chatbot/shared-types';
 import { TenantDocument } from '../tenants/schemas/tenant.schema';
@@ -7,6 +7,7 @@ import { RetrievalService } from '../rag/retrieval.service';
 import { TenantsService } from '../tenants/tenant.service';
 import { SessionService } from './session.service';
 import { IChatResponse } from '@custom-ai-chatbot/shared-types';
+import { UsageService } from '../billing/usage.service';
 
 const PREFERENCE_TO_CATEGORIES: Record<string, string[]> = {
   culture: ['culture'],
@@ -21,13 +22,16 @@ export class ChatService {
     private readonly llmService: LlmService,
     private readonly retrievalService: RetrievalService,
     private readonly tenantsService: TenantsService,
+    private readonly usageService: UsageService,
   ) {}
 
   async startSession(tenant: TenantDocument, language = 'en'): Promise<IChatResponse> {
-    const planLimit = tenant.usage?.monthlySessionLimit ?? 500;
-    const used = tenant.usage?.currentMonthSessions ?? 0;
-    if (used >= planLimit) {
-      throw new BadRequestException('Monthly session limit reached. Please upgrade your plan.');
+    const overLimit = await this.usageService.isOverLimit(tenant._id.toString());
+    if (overLimit) {
+      throw new HttpException(
+        { statusCode: 429, message: 'Monthly session limit reached. Please upgrade your plan.' },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     const conv = await this.sessionService.create(tenant._id.toString(), language);
@@ -63,6 +67,7 @@ export class ChatService {
     const { transition, updatedContext } = await engine.process(context, message, llm);
 
     await this.sessionService.saveContext(conv, updatedContext, transition.message, transition.quickReplies);
+    await this.usageService.incrementMessage(tenant._id.toString());
 
     return {
       sessionId,

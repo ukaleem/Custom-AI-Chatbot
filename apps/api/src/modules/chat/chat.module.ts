@@ -4,6 +4,7 @@ import { AuthModule } from '../auth/auth.module';
 import { LlmModule } from '../llm/llm.module';
 import { RagModule } from '../rag/rag.module';
 import { TenantsModule } from '../tenants/tenant.module';
+import { BillingModule } from '../billing/billing.module';
 import { Conversation, ConversationSchema } from './schemas/conversation.schema';
 import { SessionService } from './session.service';
 import { ChatService } from './chat.service';
@@ -17,6 +18,7 @@ import { ChatGateway } from './chat.gateway';
     LlmModule,
     RagModule,
     TenantsModule,
+    BillingModule,
   ],
   providers: [SessionService, ChatService, ChatGateway],
   controllers: [ChatController],

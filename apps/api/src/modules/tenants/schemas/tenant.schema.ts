@@ -26,6 +26,12 @@ export class Tenant {
   @Prop({ default: '', select: false })
   adminPasswordHash: string;
 
+  @Prop({ default: null })
+  stripeCustomerId: string | null;
+
+  @Prop({ default: null })
+  stripeSubscriptionId: string | null;
+
   @Prop({
     type: {
       botName: { type: String, default: 'Guide' },

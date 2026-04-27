@@ -3,10 +3,17 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as path from 'path';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Security headers — relax for Swagger UI and widget iframe embedding
+  app.use(helmet({
+    contentSecurityPolicy: false,   // Swagger UI uses inline scripts
+    crossOriginEmbedderPolicy: false,
+  }));
 
   // Serve built widget bundle from dist/apps/widget/
   app.useStaticAssets(path.join(process.cwd(), 'dist', 'apps', 'widget'), {

@@ -18,6 +18,8 @@ export const routes: Routes = [
       { path: 'settings/bot', loadComponent: () => import('./pages/settings/bot/bot-settings.component').then(m => m.BotSettingsComponent) },
       { path: 'settings/llm', loadComponent: () => import('./pages/settings/llm/llm-settings.component').then(m => m.LlmSettingsComponent) },
       { path: 'settings/widget', loadComponent: () => import('./pages/settings/widget/widget-settings.component').then(m => m.WidgetSettingsComponent) },
+      { path: 'billing', loadComponent: () => import('./pages/billing/billing.component').then(m => m.BillingComponent) },
+      { path: 'super-admin', loadComponent: () => import('./pages/super-admin/super-admin.component').then(m => m.SuperAdminComponent) },
     ],
   },
   { path: '**', redirectTo: '' },
