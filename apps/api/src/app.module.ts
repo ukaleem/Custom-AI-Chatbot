@@ -16,6 +16,7 @@ import { AdminAuthModule } from './modules/admin-auth/admin-auth.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { WidgetModule } from './modules/widget/widget.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { BillingModule } from './modules/billing/billing.module';
     AnalyticsModule,
     WidgetModule,
     BillingModule,
+    SuperAdminModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
