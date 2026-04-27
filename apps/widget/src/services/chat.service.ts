@@ -1,9 +1,14 @@
 import { WidgetConfig } from './config.service';
 
+export interface QuickReply {
+  label: string;
+  value: string;
+}
+
 export interface ChatResponse {
   sessionId: string;
   message: string;
-  quickReplies?: string[];
+  quickReplies?: QuickReply[];
   flowState: string;
   language: string;
   isComplete: boolean;

@@ -1,5 +1,5 @@
 import { ConfigService, WidgetConfig } from './services/config.service';
-import { ChatService, ChatResponse } from './services/chat.service';
+import { ChatService, ChatResponse, QuickReply } from './services/chat.service';
 import { I18nService } from './services/i18n.service';
 import { ThemeService } from './services/theme.service';
 
@@ -145,7 +145,7 @@ export class CataniaBotElement extends HTMLElement {
   private sessionId: string | null = null;
   private isOpen = false;
   private messages: Message[] = [];
-  private quickReplies: string[] = [];
+  private quickReplies: QuickReply[] = [];
   private initialized = false;
 
   constructor() {
@@ -218,7 +218,7 @@ export class CataniaBotElement extends HTMLElement {
         </div>
 
         <div class="quick-replies" id="quick-replies">
-          ${this.quickReplies.map(qr => `<button class="qr-btn" data-reply="${qr}">${qr}</button>`).join('')}
+          ${this.quickReplies.map(qr => `<button class="qr-btn" data-reply="${this.esc(qr.value)}">${this.esc(qr.label)}</button>`).join('')}
         </div>
 
         <div class="input-area">
@@ -266,8 +266,8 @@ export class CataniaBotElement extends HTMLElement {
 
     this.shadow.querySelectorAll('.qr-btn').forEach(btn =>
       btn.addEventListener('click', () => {
-        const r = btn.getAttribute('data-reply');
-        if (r) this.sendMessage(r);
+        const value = btn.getAttribute('data-reply');
+        if (value) this.sendMessage(value);
       })
     );
   }
@@ -378,21 +378,23 @@ export class CataniaBotElement extends HTMLElement {
     }
   }
 
-  private setQr(replies: string[]) {
+  private setQr(replies: QuickReply[]) {
     this.quickReplies = replies;
     const container = this.shadow.getElementById('quick-replies');
     if (!container) return;
-    container.innerHTML = replies.map(qr => `<button class="qr-btn" data-reply="${qr}">${qr}</button>`).join('');
+    container.innerHTML = replies
+      .map(qr => `<button class="qr-btn" data-reply="${this.esc(qr.value)}">${this.esc(qr.label)}</button>`)
+      .join('');
     container.querySelectorAll('.qr-btn').forEach(btn =>
       btn.addEventListener('click', () => {
-        const r = btn.getAttribute('data-reply');
-        if (r) this.sendMessage(r);
+        const value = btn.getAttribute('data-reply');
+        if (value) this.sendMessage(value);
       })
     );
   }
 
   private clearQr() {
-    this.quickReplies = [];
+    this.quickReplies = [] as QuickReply[];
     const container = this.shadow.getElementById('quick-replies');
     if (container) container.innerHTML = '';
   }
