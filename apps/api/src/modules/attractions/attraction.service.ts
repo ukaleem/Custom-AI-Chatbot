@@ -29,7 +29,7 @@ export class AttractionService {
     const key = (tenant as any).llmConfig?.apiKey as string | undefined;
     if (!key) {
       throw new BadRequestException(
-        'No OpenAI API key configured for this tenant. Set it via PUT /tenants/:id.',
+        'No API key configured. Go to Admin Dashboard → LLM API Key and add your provider key first.',
       );
     }
     return key;

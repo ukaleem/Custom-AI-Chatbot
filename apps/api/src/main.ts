@@ -23,10 +23,23 @@ async function bootstrap() {
     }),
   );
 
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').filter(Boolean) ?? [];
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? '*',
+    origin: (origin, callback) => {
+      // No origin header = same-origin or curl/Postman → allow
+      // 'null' = file:// opened in browser → allow (widget dev testing)
+      // Empty allowlist = no restriction configured → allow all
+      if (!origin || origin === 'null' || allowedOrigins.length === 0) {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      callback(null, false);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-api-key', 'x-admin-key', 'Authorization'],
+    credentials: true,
   });
 
   const swaggerConfig = new DocumentBuilder()
