@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -13,15 +14,23 @@ const DEFAULT_MODELS: Record<string, string> = {
 @Component({
   selector: 'app-llm-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="page-header">
       <h1 class="page-title">LLM API Key</h1>
     </div>
 
     <div style="max-width:560px">
+      <!-- Key-saved banner shown after a successful save -->
+      @if (keySaved()) {
+        <div style="background:#f0fdf4;border:1px solid #86efac;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:8px">
+          <span style="color:#16a34a;font-size:16px">✓</span>
+          <span><strong>API key saved.</strong> It is stored securely and never shown again. To replace it, paste a new key below.</span>
+        </div>
+      }
+
       <div class="card" style="margin-bottom:16px;background:#fffbeb;border-color:#fcd34d">
-        <strong>🔒 Security note:</strong> Your API key is stored encrypted and never returned after saving. Only you can replace it.
+        <strong>Security note:</strong> Your LLM provider key is stored server-side and never returned. The input clears after saving — that is normal and means the key was saved.
       </div>
 
       <form (ngSubmit)="save()" class="card">
@@ -36,23 +45,28 @@ const DEFAULT_MODELS: Record<string, string> = {
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">API Key</label>
+          <label class="form-label">API Key {{ keySaved() ? '(leave blank to keep existing)' : '' }}</label>
           <input class="form-control" [(ngModel)]="apiKey" name="apiKey" type="password"
-            [placeholder]="provider === 'openai' ? 'sk-...' : provider === 'anthropic' ? 'sk-ant-...' : 'Enter your API key'"
-            autocomplete="new-password" required minlength="10" />
+            [placeholder]="apiKeyPlaceholder()"
+            autocomplete="new-password" />
           <small style="color:var(--text-muted);font-size:12px;margin-top:4px;display:block">
             Get your key from <a [href]="providerUrl()" target="_blank">{{ provider }} dashboard</a>
           </small>
         </div>
         <div class="form-group">
-          <label class="form-label">Model (optional)</label>
+          <label class="form-label">Model (optional — leave blank for default)</label>
           <input class="form-control" [(ngModel)]="model" name="model" [placeholder]="DEFAULT_MODELS[provider]" />
-          <small style="color:var(--text-muted);font-size:12px;margin-top:4px;display:block">Leave blank to use the default model for this provider.</small>
         </div>
 
         @if (provider === 'anthropic') {
           <div style="background:#fef3c7;border:1px solid #f59e0b;padding:12px;border-radius:6px;margin-bottom:16px;font-size:13px">
-            ⚠️ Anthropic doesn't provide an embeddings API. The bot will use your key for chat, but you also need an OpenAI key for vector search (via Settings → LLM → OpenAI).
+            Anthropic does not support embeddings. The bot uses your Anthropic key for chat but needs an OpenAI key for vector search. Save OpenAI first, then come back to set Anthropic if needed.
+          </div>
+        }
+
+        @if (saveError()) {
+          <div style="background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:6px;margin-bottom:16px;font-size:13px">
+            {{ saveError() }}
           </div>
         }
 
@@ -63,16 +77,36 @@ const DEFAULT_MODELS: Record<string, string> = {
     </div>
   `,
 })
-export class LlmSettingsComponent {
+export class LlmSettingsComponent implements OnInit {
   readonly DEFAULT_MODELS = DEFAULT_MODELS;
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
   saving = signal(false);
+  keySaved = signal(false);
+  saveError = signal('');
   provider = 'openai';
   apiKey = '';
   model = '';
 
+  ngOnInit() {
+    // Load current provider so the dropdown reflects the saved setting
+    this.api.get<{ plan: string; usage: unknown; botConfig: unknown; llmProvider?: string }>('settings').subscribe({
+      next: (r) => {
+        if ((r as Record<string, unknown>)['llmProvider']) {
+          this.provider = (r as Record<string, unknown>)['llmProvider'] as string;
+        }
+      },
+      error: () => {},
+    });
+  }
+
   onProviderChange() { this.model = ''; }
+
+  apiKeyPlaceholder(): string {
+    if (this.keySaved()) return '••••••••  (key is stored — paste new key to replace)';
+    const map: Record<string, string> = { openai: 'sk-...', anthropic: 'sk-ant-...', gemini: 'AIza...', mistral: 'Your Mistral key' };
+    return map[this.provider] ?? 'Your API key';
+  }
 
   providerUrl(): string {
     const urls: Record<string, string> = { openai: 'https://platform.openai.com/api-keys', anthropic: 'https://console.anthropic.com/', gemini: 'https://aistudio.google.com/app/apikey', mistral: 'https://console.mistral.ai/' };
@@ -82,9 +116,20 @@ export class LlmSettingsComponent {
   save() {
     if (!this.apiKey) return;
     this.saving.set(true);
+    this.saveError.set('');
     this.api.put('settings/llm', { provider: this.provider, apiKey: this.apiKey, model: this.model || undefined }).subscribe({
-      next: () => { this.toast.success('API key saved successfully'); this.apiKey = ''; this.saving.set(false); },
-      error: (e) => { this.toast.error(e?.error?.message ?? 'Failed to save'); this.saving.set(false); },
+      next: () => {
+        this.toast.success('API key saved successfully');
+        this.apiKey = '';
+        this.keySaved.set(true);
+        this.saving.set(false);
+      },
+      error: (e) => {
+        const msg = e?.error?.message;
+        this.saveError.set(Array.isArray(msg) ? msg.join(', ') : (msg ?? 'Save failed — check your key and try again'));
+        this.toast.error('Failed to save');
+        this.saving.set(false);
+      },
     });
   }
 }

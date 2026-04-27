@@ -1,30 +1,40 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsArray, IsHexColor, IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
+
+// Convert empty strings to undefined so @IsOptional() correctly skips them.
+// Without this, '' passes @IsOptional() but then fails @IsUrl(), @IsHexColor(), @MinLength() etc.
+const emptyToUndefined = () => Transform(({ value }) => (value === '' || value == null ? undefined : value));
 
 export class UpdateBotConfigDto {
   @ApiPropertyOptional({ example: 'Catania Guide' })
   @IsOptional()
+  @emptyToUndefined()
   @IsString()
   @MinLength(2)
   botName?: string;
 
   @ApiPropertyOptional({ example: 'Welcome to Catania! How can I help you today?' })
   @IsOptional()
+  @emptyToUndefined()
   @IsString()
   greeting?: string;
 
   @ApiPropertyOptional({ example: '#2563EB' })
   @IsOptional()
+  @emptyToUndefined()
   @IsHexColor()
   primaryColor?: string;
 
   @ApiPropertyOptional({ example: 'https://example.com/logo.png' })
   @IsOptional()
+  @emptyToUndefined()
   @IsUrl()
   logoUrl?: string;
 
   @ApiPropertyOptional({ example: 'en' })
   @IsOptional()
+  @emptyToUndefined()
   @IsString()
   defaultLanguage?: string;
 

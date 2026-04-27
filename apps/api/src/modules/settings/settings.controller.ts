@@ -18,12 +18,18 @@ export class SettingsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get current bot configuration (LLM key is never returned)' })
+  @ApiOperation({ summary: 'Get current bot + account settings (LLM key never returned)' })
   async getSettings(@CurrentTenant() tenant: TenantDocument) {
+    const full = await this.tenantModel
+      .findById(tenant._id)
+      .select('+llmConfig')
+      .exec();
     return {
       botConfig: tenant.botConfig,
       plan: tenant.plan,
       usage: tenant.usage,
+      llmProvider: full?.llmConfig?.provider ?? null,
+      llmModel: full?.llmConfig?.model ?? null,
     };
   }
 
