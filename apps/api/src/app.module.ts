@@ -17,6 +17,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { WidgetModule } from './modules/widget/widget.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
+import { KnowledgeItemModule } from './modules/knowledge/knowledge-item.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { SuperAdminModule } from './modules/super-admin/super-admin.module';
     WidgetModule,
     BillingModule,
     SuperAdminModule,
+    KnowledgeItemModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

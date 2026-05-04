@@ -23,8 +23,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       <a routerLink="/dashboard" routerLinkActive="active">
         <span class="icon">📊</span> Dashboard
       </a>
-      <a routerLink="/attractions" routerLinkActive="active">
-        <span class="icon">🏛</span> Attractions
+      <a routerLink="/knowledge" routerLinkActive="active">
+        <span class="icon">🧠</span> Knowledge Base
       </a>
       <a routerLink="/conversations" routerLinkActive="active">
         <span class="icon">💬</span> Conversations
@@ -42,9 +42,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       <div class="nav-section">Account</div>
       <a routerLink="/billing" routerLinkActive="active">
         <span class="icon">💳</span> Billing & Plan
-      </a>
-      <a routerLink="/super-admin" routerLinkActive="active">
-        <span class="icon">🛡</span> Super Admin
       </a>
     </nav>
   `,

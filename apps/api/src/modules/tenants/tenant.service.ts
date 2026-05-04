@@ -66,6 +66,11 @@ export class TenantsService {
     if (!result) throw new NotFoundException(`Tenant not found`);
   }
 
+  async setActiveStatus(id: string, isActive: boolean): Promise<void> {
+    const result = await this.tenantModel.findByIdAndUpdate(id, { $set: { isActive } }).exec();
+    if (!result) throw new NotFoundException(`Tenant not found`);
+  }
+
   async findBySlug(slug: string): Promise<TenantDocument | null> {
     return this.tenantModel.findOne({ slug }).exec();
   }
