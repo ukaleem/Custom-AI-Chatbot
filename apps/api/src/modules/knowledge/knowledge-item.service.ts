@@ -1,0 +1,145 @@
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { KnowledgeItem, KnowledgeItemDocument } from './schemas/knowledge-item.schema';
+import { CreateKnowledgeItemDto, UpdateKnowledgeItemDto, ImportRawDataDto } from './dto/knowledge-item.dto';
+import { DataParserService } from './parsers/data-parser.service';
+import { TenantDocument } from '../tenants/schemas/tenant.schema';
+import { QdrantService } from '../rag/qdrant.service';
+import { EmbeddingService } from '../rag/embedding.service';
+
+@Injectable()
+export class KnowledgeItemService {
+  private readonly logger = new Logger(KnowledgeItemService.name);
+
+  constructor(
+    @InjectModel(KnowledgeItem.name) private readonly model: Model<KnowledgeItemDocument>,
+    private readonly qdrant: QdrantService,
+    private readonly embedding: EmbeddingService,
+    private readonly parser: DataParserService,
+  ) {}
+
+  // ─── CRUD ─────────────────────────────────────────────────────────────────
+
+  async create(tenant: TenantDocument, dto: CreateKnowledgeItemDto): Promise<KnowledgeItemDocument> {
+    const doc = await this.model.create({ ...dto, tenantId: tenant.id, source: dto.source ?? 'manual' });
+    await this.embedAndUpsert(doc, tenant);
+    return doc;
+  }
+
+  async bulkCreate(tenant: TenantDocument, items: CreateKnowledgeItemDto[], source = 'api'): Promise<{ created: number; failed: number }> {
+    const docs = await this.model.insertMany(
+      items.map(d => ({ ...d, tenantId: tenant.id, source })),
+      { ordered: false },
+    ) as unknown as KnowledgeItemDocument[];
+    const results = await Promise.allSettled(docs.map(doc => this.embedAndUpsert(doc, tenant)));
+    return { created: docs.length, failed: results.filter(r => r.status === 'rejected').length };
+  }
+
+  async importRaw(tenant: TenantDocument, dto: ImportRawDataDto): Promise<{ created: number; failed: number; detected: string; parsed: number }> {
+    const { items, source, detected } = this.parser.parse(dto.data, dto.format ?? 'auto', dto.columnMap ?? {});
+    if (!items.length) throw new BadRequestException('No valid records could be parsed from the provided data. Check the format and column names.');
+    const result = await this.bulkCreate(tenant, items as CreateKnowledgeItemDto[], source);
+    return { ...result, detected, parsed: items.length };
+  }
+
+  async findAll(
+    tenantId: string,
+    opts: { page: number; limit: number; search: string; category: string } = { page: 1, limit: 20, search: '', category: '' },
+  ) {
+    const filter: Record<string, unknown> = { tenantId };
+    if (opts.search) filter['$or'] = [
+      { title: { $regex: opts.search, $options: 'i' } },
+      { content: { $regex: opts.search, $options: 'i' } },
+      { tags: { $regex: opts.search, $options: 'i' } },
+    ];
+    if (opts.category) filter['category'] = opts.category;
+
+    const skip = (opts.page - 1) * opts.limit;
+    const [items, total] = await Promise.all([
+      this.model.find(filter).sort({ createdAt: -1 }).skip(skip).limit(opts.limit).exec(),
+      this.model.countDocuments(filter),
+    ]);
+    return { items, total, page: opts.page, pages: Math.ceil(total / opts.limit) };
+  }
+
+  async findOne(tenantId: string, id: string): Promise<KnowledgeItemDocument> {
+    const doc = await this.model.findOne({ _id: id, tenantId }).exec();
+    if (!doc) throw new NotFoundException(`Knowledge item ${id} not found`);
+    return doc;
+  }
+
+  async update(tenant: TenantDocument, id: string, dto: UpdateKnowledgeItemDto): Promise<KnowledgeItemDocument> {
+    const doc = await this.model.findOneAndUpdate({ _id: id, tenantId: tenant.id }, dto, { new: true }).exec();
+    if (!doc) throw new NotFoundException(`Knowledge item ${id} not found`);
+    await this.embedAndUpsert(doc, tenant);
+    return doc;
+  }
+
+  async remove(tenant: TenantDocument, id: string): Promise<void> {
+    const doc = await this.model.findOneAndDelete({ _id: id, tenantId: tenant.id }).exec();
+    if (!doc) throw new NotFoundException(`Knowledge item ${id} not found`);
+    await this.qdrant.delete(tenant.id, id).catch(err =>
+      this.logger.warn(`Qdrant delete skipped: ${(err as Error).message}`)
+    );
+  }
+
+  async getCategories(tenantId: string): Promise<string[]> {
+    const cats = await this.model.distinct('category', { tenantId }).exec();
+    return (cats as string[]).filter(Boolean).sort();
+  }
+
+  async reindex(tenant: TenantDocument): Promise<{ reindexed: number; failed: number }> {
+    const docs = await this.model.find({ tenantId: tenant.id, isActive: true }).exec();
+    const results = await Promise.allSettled(docs.map(doc => this.embedAndUpsert(doc, tenant)));
+    return { reindexed: results.length - results.filter(r => r.status === 'rejected').length, failed: results.filter(r => r.status === 'rejected').length };
+  }
+
+  // ─── Migration from attractions ───────────────────────────────────────────
+
+  async migrateFromAttractions(tenant: TenantDocument): Promise<{ migrated: number }> {
+    const Attraction = this.model.db.model('Attraction');
+    const attractions = await (Attraction as any).find({ tenantId: tenant.id }).lean().exec();
+    const items: CreateKnowledgeItemDto[] = attractions.map((a: any) => ({
+      title: a.name?.en ?? a.name ?? 'Unnamed',
+      content: a.description?.en ?? a.description ?? '',
+      summary: a.shortDescription?.en ?? a.shortDescription ?? '',
+      category: a.category ?? 'general',
+      tags: a.tags ?? [],
+      metadata: {
+        address: a.address, location: a.location,
+        priceRange: a.priceRange, durationMinutes: a.durationMinutes,
+        foodStyle: a.foodStyle, imageUrl: a.imageUrl, websiteUrl: a.websiteUrl,
+      },
+      isActive: a.isActive ?? true,
+      source: 'api',
+    }));
+    const result = await this.bulkCreate(tenant, items, 'api');
+    return { migrated: result.created };
+  }
+
+  // ─── Embedding ────────────────────────────────────────────────────────────
+
+  private async embedAndUpsert(doc: KnowledgeItemDocument, tenant: TenantDocument): Promise<void> {
+    try {
+      const llmConfig = await this.getLlmConfig(tenant.id);
+      if (!llmConfig?.apiKey) {
+        this.logger.warn(`Embed skipped for ${doc.id} — no LLM key configured`);
+        return;
+      }
+      const text = [doc.title, doc.summary, doc.content, doc.tags.join(' ')].filter(Boolean).join('\n');
+      const vector = await this.embedding.embedAttraction({ name: { en: text }, description: { en: doc.content }, shortDescription: { en: doc.summary }, tags: doc.tags, category: doc.category } as any, llmConfig.apiKey);
+      await this.qdrant.upsert(tenant.id, doc.id, vector, {
+        mongoId: doc.id, tenantId: tenant.id, name: doc.title,
+        category: doc.category, tags: doc.tags, isActive: doc.isActive,
+      });
+    } catch (err) {
+      this.logger.warn(`Embed skipped for ${doc.id}: ${(err as Error).message}`);
+    }
+  }
+
+  private async getLlmConfig(tenantId: string) {
+    const tenant = await this.model.db.model('Tenant').findById(tenantId).select('+llmConfig').lean().exec() as any;
+    return tenant?.llmConfig;
+  }
+}
