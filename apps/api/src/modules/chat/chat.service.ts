@@ -44,9 +44,11 @@ export class ChatService {
     const context = this.sessionService.buildFlowContext(conv, botName);
     const engine = this.buildEngine(tenant, llm);
 
+    const t0 = Date.now();
     const { transition, updatedContext } = await this.runEngine(engine, context, '', llm);
+    const tokenData = this.extractTokenData(llm, Date.now() - t0);
 
-    await this.sessionService.saveContext(conv, updatedContext, transition.message, transition.quickReplies);
+    await this.sessionService.saveContext(conv, updatedContext, transition.message, transition.quickReplies, tokenData);
     await this.tenantsService.incrementSessionCount(tenant._id.toString());
 
     return {
@@ -67,9 +69,11 @@ export class ChatService {
     const context = this.sessionService.buildFlowContext(conv, botName);
     const engine = this.buildEngine(tenant, llm);
 
+    const t0 = Date.now();
     const { transition, updatedContext } = await this.runEngine(engine, context, message, llm);
+    const tokenData = this.extractTokenData(llm, Date.now() - t0);
 
-    await this.sessionService.saveContext(conv, updatedContext, transition.message, transition.quickReplies);
+    await this.sessionService.saveContext(conv, updatedContext, transition.message, transition.quickReplies, tokenData);
     await this.usageService.incrementMessage(tenant._id.toString());
 
     return {
@@ -96,6 +100,16 @@ export class ChatService {
 
   async endSession(sessionId: string, tenant: TenantDocument): Promise<void> {
     await this.sessionService.endSession(sessionId, tenant._id.toString());
+  }
+
+  private extractTokenData(llm: any, latencyMs: number) {
+    const usage = llm?.lastUsage;
+    return {
+      inputTokens: usage?.inputTokens ?? 0,
+      outputTokens: usage?.outputTokens ?? 0,
+      modelUsed: usage?.model ?? '',
+      latencyMs,
+    };
   }
 
   private async runEngine(
