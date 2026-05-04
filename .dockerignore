@@ -1,0 +1,12 @@
+node_modules
+dist
+.angular
+.env
+.env.local
+*.md
+.git
+.github
+coverage
+tmp
+apps/admin
+apps/widget/node_modules

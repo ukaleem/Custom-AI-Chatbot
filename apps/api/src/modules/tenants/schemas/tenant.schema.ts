@@ -26,6 +26,12 @@ export class Tenant {
   @Prop({ default: '', select: false })
   adminPasswordHash: string;
 
+  @Prop({ default: null })
+  stripeCustomerId: string | null;
+
+  @Prop({ default: null })
+  stripeSubscriptionId: string | null;
+
   @Prop({
     type: {
       botName: { type: String, default: 'Guide' },
@@ -84,5 +90,3 @@ export class Tenant {
 
 export const TenantSchema = SchemaFactory.createForClass(Tenant);
 
-// TenantSchema.index({ apiKey: 1 }, { unique: true });
-// TenantSchema.index({ slug: 1 }, { unique: true });

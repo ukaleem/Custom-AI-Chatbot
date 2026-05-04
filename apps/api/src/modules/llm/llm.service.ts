@@ -18,9 +18,7 @@ export class LlmService {
       .lean()
       .exec();
 
-    if (!tenant?.llmConfig?.apiKey) {
-      return new UnconfiguredLlmProvider();
-    }
+    if (!tenant?.llmConfig?.apiKey) return new UnconfiguredLlmProvider();
 
     return createLlmProvider({
       provider: tenant.llmConfig.provider,

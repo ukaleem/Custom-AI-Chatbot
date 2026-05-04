@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpStatus, HttpException, Logger } from '@nestjs/common';
 import { FlowEngine } from '@custom-ai-chatbot/bot-core';
 import { AttractionCategory, IAttractionResult, RetrievalFn } from '@custom-ai-chatbot/shared-types';
 import { TenantDocument } from '../tenants/schemas/tenant.schema';
@@ -7,6 +7,8 @@ import { RetrievalService } from '../rag/retrieval.service';
 import { TenantsService } from '../tenants/tenant.service';
 import { SessionService } from './session.service';
 import { IChatResponse } from '@custom-ai-chatbot/shared-types';
+import { UsageService } from '../billing/usage.service';
+import { UnconfiguredLlmProvider } from '@custom-ai-chatbot/llm-providers';
 
 const PREFERENCE_TO_CATEGORIES: Record<string, string[]> = {
   culture: ['culture'],
@@ -16,18 +18,23 @@ const PREFERENCE_TO_CATEGORIES: Record<string, string[]> = {
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
     private readonly sessionService: SessionService,
     private readonly llmService: LlmService,
     private readonly retrievalService: RetrievalService,
     private readonly tenantsService: TenantsService,
+    private readonly usageService: UsageService,
   ) {}
 
   async startSession(tenant: TenantDocument, language = 'en'): Promise<IChatResponse> {
-    const planLimit = tenant.usage?.monthlySessionLimit ?? 500;
-    const used = tenant.usage?.currentMonthSessions ?? 0;
-    if (used >= planLimit) {
-      throw new BadRequestException('Monthly session limit reached. Please upgrade your plan.');
+    const overLimit = await this.usageService.isOverLimit(tenant._id.toString());
+    if (overLimit) {
+      throw new HttpException(
+        { statusCode: 429, message: 'Monthly session limit reached. Please upgrade your plan.' },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     const conv = await this.sessionService.create(tenant._id.toString(), language);
@@ -37,7 +44,7 @@ export class ChatService {
     const context = this.sessionService.buildFlowContext(conv, botName);
     const engine = this.buildEngine(tenant, llm);
 
-    const { transition, updatedContext } = await engine.process(context, '', llm);
+    const { transition, updatedContext } = await this.runEngine(engine, context, '', llm);
 
     await this.sessionService.saveContext(conv, updatedContext, transition.message, transition.quickReplies);
     await this.tenantsService.incrementSessionCount(tenant._id.toString());
@@ -60,9 +67,10 @@ export class ChatService {
     const context = this.sessionService.buildFlowContext(conv, botName);
     const engine = this.buildEngine(tenant, llm);
 
-    const { transition, updatedContext } = await engine.process(context, message, llm);
+    const { transition, updatedContext } = await this.runEngine(engine, context, message, llm);
 
     await this.sessionService.saveContext(conv, updatedContext, transition.message, transition.quickReplies);
+    await this.usageService.incrementMessage(tenant._id.toString());
 
     return {
       sessionId,
@@ -88,6 +96,26 @@ export class ChatService {
 
   async endSession(sessionId: string, tenant: TenantDocument): Promise<void> {
     await this.sessionService.endSession(sessionId, tenant._id.toString());
+  }
+
+  private async runEngine(
+    engine: FlowEngine,
+    context: Parameters<FlowEngine['process']>[0],
+    message: string,
+    llm: ReturnType<LlmService['forTenantSync']>,
+  ): Promise<ReturnType<FlowEngine['process']> extends Promise<infer R> ? R : never> {
+    try {
+      return await engine.process(context, message, llm) as any;
+    } catch (err) {
+      // LLM key is invalid or quota exceeded — fall back to demo mode silently
+      const errMsg = (err as Error).message ?? '';
+      if (errMsg.includes('401') || errMsg.includes('Incorrect API key') || errMsg.includes('quota') || errMsg.includes('authentication')) {
+        this.logger.warn(`LLM provider error (falling back to demo mode): ${errMsg.slice(0, 80)}`);
+        const fallback = new UnconfiguredLlmProvider();
+        return engine.process(context, message, fallback) as any;
+      }
+      throw err;
+    }
   }
 
   private buildEngine(tenant: TenantDocument, llm: ReturnType<LlmService['forTenantSync']>): FlowEngine {

@@ -12,6 +12,8 @@ interface AttractionForm {
   category: string;
   tags: string;
   address: string;
+  lat: number | null;
+  lng: number | null;
   priceRange: string;
   durationMinutes: number | null;
   foodStyle: string;
@@ -56,6 +58,17 @@ interface AttractionForm {
           <label class="form-label">Address</label>
           <input class="form-control" [(ngModel)]="form.address" name="address" placeholder="Via Roma 1, Catania" />
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Latitude *</label>
+            <input class="form-control" type="number" step="any" [(ngModel)]="form.lat" name="lat" placeholder="37.5026" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude *</label>
+            <input class="form-control" type="number" step="any" [(ngModel)]="form.lng" name="lng" placeholder="15.0878" required />
+          </div>
+        </div>
+        <small style="color:var(--text-muted);font-size:12px;display:block;margin-top:-8px;margin-bottom:8px">Find coordinates on <a href="https://www.google.com/maps" target="_blank">Google Maps</a> → right-click the location → copy coordinates.</small>
       </div>
 
       <div class="card" style="margin-bottom:16px">
@@ -131,7 +144,7 @@ export class AttractionFormComponent implements OnInit {
   error = signal('');
   private editId = '';
 
-  form: AttractionForm = { name: { en: '', it: '', de: '' }, description: { en: '', it: '' }, shortDescription: { en: '' }, category: '', tags: '', address: '', priceRange: '', durationMinutes: null, foodStyle: '', isActive: true };
+  form: AttractionForm = { name: { en: '', it: '', de: '' }, description: { en: '', it: '' }, shortDescription: { en: '' }, category: '', tags: '', address: '', lat: null, lng: null, priceRange: '', durationMinutes: null, foodStyle: '', isActive: true };
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -142,7 +155,8 @@ export class AttractionFormComponent implements OnInit {
         const n = a['name'] as Record<string, string> ?? {};
         const d = a['description'] as Record<string, string> ?? {};
         const s = a['shortDescription'] as Record<string, string> ?? {};
-        this.form = { name: { en: n['en']??'', it: n['it']??'', de: n['de']??'' }, description: { en: d['en']??'', it: d['it']??'' }, shortDescription: { en: s['en']??'' }, category: String(a['category']??''), tags: (a['tags'] as string[])?.join(', ')??'', address: String(a['address']??''), priceRange: String(a['priceRange']??''), durationMinutes: a['durationMinutes'] as number ?? null, foodStyle: String(a['foodStyle']??''), isActive: Boolean(a['isActive']??true) };
+        const loc = a['location'] as Record<string, number> ?? {};
+        this.form = { name: { en: n['en']??'', it: n['it']??'', de: n['de']??'' }, description: { en: d['en']??'', it: d['it']??'' }, shortDescription: { en: s['en']??'' }, category: String(a['category']??''), tags: (a['tags'] as string[])?.join(', ')??'', address: String(a['address']??''), lat: loc['lat']??null, lng: loc['lng']??null, priceRange: String(a['priceRange']??''), durationMinutes: a['durationMinutes'] as number ?? null, foodStyle: String(a['foodStyle']??''), isActive: Boolean(a['isActive']??true) };
       });
     }
   }
@@ -150,7 +164,12 @@ export class AttractionFormComponent implements OnInit {
   onSubmit() {
     this.saving.set(true);
     this.error.set('');
-    const payload = { ...this.form, tags: this.form.tags.split(',').map(t => t.trim()).filter(Boolean) };
+    const { lat, lng, tags, ...rest } = this.form;
+    const payload = {
+      ...rest,
+      location: { lat: lat ?? 0, lng: lng ?? 0 },
+      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+    };
     const req = this.isEdit()
       ? this.api.put(`attractions/${this.editId}`, payload)
       : this.api.post('attractions', payload);

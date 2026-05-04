@@ -89,6 +89,36 @@ export class TenantsService {
     if (!result) throw new NotFoundException('Tenant not found');
   }
 
+  async updatePlan(
+    tenantId: string,
+    plan: string,
+    monthlySessionLimit: number,
+    stripeSubscriptionId: string | null,
+  ): Promise<void> {
+    const update: Record<string, unknown> = {
+      plan,
+      'usage.monthlySessionLimit': monthlySessionLimit,
+    };
+    if (stripeSubscriptionId !== null) {
+      update['stripeSubscriptionId'] = stripeSubscriptionId;
+    }
+    await this.tenantModel.findByIdAndUpdate(tenantId, { $set: update }).exec();
+  }
+
+  async setStripeCustomerId(tenantId: string, customerId: string): Promise<void> {
+    await this.tenantModel
+      .findByIdAndUpdate(tenantId, { $set: { stripeCustomerId: customerId } })
+      .exec();
+  }
+
+  async findAllWithUsage(): Promise<TenantDocument[]> {
+    return this.tenantModel
+      .find()
+      .select('-apiKey -adminPasswordHash -llmConfig')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
   private generateApiKey(): string {
     return `cac_${uuidv4().replace(/-/g, '')}`;
   }

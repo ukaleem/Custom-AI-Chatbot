@@ -14,6 +14,9 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AdminAuthModule } from './modules/admin-auth/admin-auth.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { WidgetModule } from './modules/widget/widget.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 
 @Module({
   imports: [
@@ -22,7 +25,11 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
       load: [configuration],
       envFilePath: ['.env', '.env.local'],
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
+    ThrottlerModule.forRoot([
+      { name: 'short',  ttl: 1000,  limit: 5   },   // 5 req/s  — burst protection
+      { name: 'medium', ttl: 10000, limit: 30  },   // 30 req/10s
+      { name: 'long',   ttl: 60000, limit: 100 },   // 100 req/min global
+    ]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -45,6 +52,9 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     ChatModule,
     AdminAuthModule,
     AnalyticsModule,
+    WidgetModule,
+    BillingModule,
+    SuperAdminModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

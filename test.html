@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catania AI Bot — Widget Test</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 700px; margin: 60px auto; padding: 0 24px; color: #1e293b; }
+    h1  { font-size: 22px; margin-bottom: 6px; }
+    p   { color: #64748b; font-size: 14px; line-height: 1.6; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .status { margin-top: 24px; padding: 14px 18px; border-radius: 8px; font-size: 13px; }
+    .ok  { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+    .err { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+  </style>
+</head>
+<body>
+  <h1>Catania AI Bot — Widget Test Page</h1>
+  <p>
+    The floating chat button should appear in the <strong>bottom-right corner</strong>.<br>
+    Click it to start a conversation. Quick reply buttons appear after the bot responds.
+  </p>
+  <p>
+    API: <code>http://localhost:3000</code> &nbsp;·&nbsp;
+    Tenant: <code>catania-city-pass</code> &nbsp;·&nbsp;
+    Language: <code>auto</code>
+  </p>
+
+  <div id="status" class="status ok">Connecting to API…</div>
+
+  <script>
+    // Quick health-check so we know the API is reachable
+    fetch('http://localhost:3000/api/v1/widget/catania-city-pass/config')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('status').textContent =
+          `✅ Connected — bot: "${d.botName}" · color: ${d.primaryColor}`;
+      })
+      .catch(() => {
+        const el = document.getElementById('status');
+        el.className = 'status err';
+        el.textContent = '❌ Cannot reach API at http://localhost:3000 — make sure npm run start:api:dev is running';
+      });
+  </script>
+
+  <!-- Widget -->
+  <script src="http://localhost:3000/widget/chatbot.js"></script>
+  <catania-bot
+    tenant-id="catania-city-pass"
+    language="auto"
+    api-url="http://localhost:3000">
+  </catania-bot>
+</body>
+</html>

@@ -7,7 +7,9 @@ import { Tenant, TenantDocument } from '../tenants/schemas/tenant.schema';
 export class ApiKeyGuard implements CanActivate {
   constructor(
     @InjectModel(Tenant.name) private readonly tenantModel: Model<TenantDocument>,
-  ) { }
+
+  ) {}
+
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

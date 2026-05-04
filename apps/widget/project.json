@@ -1,0 +1,28 @@
+{
+  "name": "widget",
+  "$schema": "../../node_modules/nx/schemas/project.json",
+  "sourceRoot": "apps/widget/src",
+  "projectType": "application",
+  "tags": ["scope:widget", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "webpack --config apps/widget/webpack.config.js --env production",
+        "cwd": "{workspaceRoot}"
+      },
+      "outputs": ["{workspaceRoot}/dist/apps/widget"]
+    },
+    "build:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "webpack --config apps/widget/webpack.config.js --watch",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["apps/widget/**/*.ts"] }
+    }
+  }
+}

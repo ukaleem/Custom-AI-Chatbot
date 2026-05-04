@@ -5,13 +5,19 @@
   "projectType": "library",
   "tags": ["scope:shared", "type:logic"],
   "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/bot-core"],
+      "options": { "jestConfig": "libs/bot-core/jest.config.ts", "passWithNoTests": true }
+    },
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/bot-core",
         "main": "libs/bot-core/src/index.ts",
-        "tsConfig": "libs/bot-core/tsconfig.lib.json"
+        "tsConfig": "libs/bot-core/tsconfig.lib.json",
+        "rootDir": "."
       }
     }
   }

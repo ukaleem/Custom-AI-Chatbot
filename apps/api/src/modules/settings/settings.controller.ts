@@ -1,16 +1,16 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Put, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { JwtAuthGuard } from '../admin-auth/jwt-auth.guard';
 import { CurrentTenant } from '../auth/current-tenant.decorator';
 import { Tenant, TenantDocument } from '../tenants/schemas/tenant.schema';
 import { UpdateLlmConfigDto } from '../tenants/dto/update-llm-config.dto';
 import { UpdateBotConfigDto } from './dto/update-bot-config.dto';
 
 @ApiTags('Settings')
-@ApiSecurity('tenant-api-key')
-@UseGuards(ApiKeyGuard)
+@ApiBearerAuth('admin-jwt')
+@UseGuards(JwtAuthGuard)
 @Controller('settings')
 export class SettingsController {
   constructor(
@@ -18,12 +18,18 @@ export class SettingsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get current bot configuration (LLM key is never returned)' })
+  @ApiOperation({ summary: 'Get current bot + account settings (LLM key never returned)' })
   async getSettings(@CurrentTenant() tenant: TenantDocument) {
+    const full = await this.tenantModel
+      .findById(tenant._id)
+      .select('+llmConfig')
+      .exec();
     return {
       botConfig: tenant.botConfig,
       plan: tenant.plan,
       usage: tenant.usage,
+      llmProvider: full?.llmConfig?.provider ?? null,
+      llmModel: full?.llmConfig?.model ?? null,
     };
   }
 

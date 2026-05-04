@@ -1,10 +1,24 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as path from 'path';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Security headers — relax for Swagger UI and widget iframe embedding
+  app.use(helmet({
+    contentSecurityPolicy: false,   // Swagger UI uses inline scripts
+    crossOriginEmbedderPolicy: false,
+  }));
+
+  // Serve built widget bundle from dist/apps/widget/
+  app.useStaticAssets(path.join(process.cwd(), 'dist', 'apps', 'widget'), {
+    prefix: '/widget',
+  });
 
   app.setGlobalPrefix('api/v1');
 
@@ -16,10 +30,23 @@ async function bootstrap() {
     }),
   );
 
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').filter(Boolean) ?? [];
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? '*',
+    origin: (origin, callback) => {
+      // No origin header = same-origin or curl/Postman → allow
+      // 'null' = file:// opened in browser → allow (widget dev testing)
+      // Empty allowlist = no restriction configured → allow all
+      if (!origin || origin === 'null' || allowedOrigins.length === 0) {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      callback(null, false);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-api-key', 'x-admin-key', 'Authorization'],
+    credentials: true,
   });
 
   const swaggerConfig = new DocumentBuilder()
@@ -39,6 +66,8 @@ async function bootstrap() {
     .setVersion('1.0')
     .addApiKey({ type: 'apiKey', in: 'header', name: 'x-api-key' }, 'tenant-api-key')
     .addApiKey({ type: 'apiKey', in: 'header', name: 'x-admin-key' }, 'super-admin-key')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'admin-jwt')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Super-admin JWT from POST /super-admin/login' }, 'super-admin-jwt')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

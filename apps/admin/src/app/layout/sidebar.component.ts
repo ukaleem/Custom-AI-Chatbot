@@ -39,6 +39,13 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       <a routerLink="/settings/widget" routerLinkActive="active">
         <span class="icon">🔗</span> Embed Widget
       </a>
+      <div class="nav-section">Account</div>
+      <a routerLink="/billing" routerLinkActive="active">
+        <span class="icon">💳</span> Billing & Plan
+      </a>
+      <a routerLink="/super-admin" routerLinkActive="active">
+        <span class="icon">🛡</span> Super Admin
+      </a>
     </nav>
   `,
 })

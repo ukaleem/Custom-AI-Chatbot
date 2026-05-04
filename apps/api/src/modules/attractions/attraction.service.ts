@@ -29,7 +29,7 @@ export class AttractionService {
     const key = (tenant as any).llmConfig?.apiKey as string | undefined;
     if (!key) {
       throw new BadRequestException(
-        'No OpenAI API key configured for this tenant. Set it via PUT /tenants/:id.',
+        'No API key configured. Go to Admin Dashboard → LLM API Key and add your provider key first.',
       );
     }
     return key;
@@ -75,8 +75,20 @@ export class AttractionService {
     return docs;
   }
 
-  async findAll(tenantId: string): Promise<AttractionDocument[]> {
-    return this.model.find({ tenantId, isActive: true }).sort({ createdAt: -1 }).exec();
+  async findAll(
+    tenantId: string,
+    opts: { page: number; limit: number; search: string } = { page: 1, limit: 20, search: '' },
+  ): Promise<{ items: AttractionDocument[]; total: number; page: number; pages: number }> {
+    const filter: Record<string, unknown> = { tenantId };
+    if (opts.search) {
+      filter['name.en'] = { $regex: opts.search, $options: 'i' };
+    }
+    const skip = (opts.page - 1) * opts.limit;
+    const [items, total] = await Promise.all([
+      this.model.find(filter).sort({ createdAt: -1 }).skip(skip).limit(opts.limit).exec(),
+      this.model.countDocuments(filter),
+    ]);
+    return { items, total, page: opts.page, pages: Math.ceil(total / opts.limit) };
   }
 
   async findOne(tenantId: string, id: string): Promise<AttractionDocument> {
