@@ -32,7 +32,7 @@ export class GeneratePlanState {
     });
 
     if (!attractions.length) {
-      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
       const message = await llm.chat(
         [{
           role: 'user',
@@ -46,7 +46,7 @@ export class GeneratePlanState {
     const planPrompt = buildPlanPrompt({ availableHours, preference, wantsFood, foodStyle, language });
     const attractionList = formatAttractionList(attractions);
 
-    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
     const message = await llm.chat(
       [{
         role: 'user',

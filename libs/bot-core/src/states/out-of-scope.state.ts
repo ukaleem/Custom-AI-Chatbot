@@ -8,7 +8,7 @@ export class OutOfScopeState {
     llm: ILLMProvider,
   ): Promise<IStateTransition> {
     const { language } = context;
-    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
 
     const message = await llm.chat(
       [{

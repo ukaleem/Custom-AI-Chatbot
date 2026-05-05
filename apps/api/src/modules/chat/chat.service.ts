@@ -40,8 +40,9 @@ export class ChatService {
     const conv = await this.sessionService.create(tenant._id.toString(), language);
     const llm = await this.llmService.forTenant(tenant._id.toString());
     const botName = tenant.botConfig?.botName ?? 'Guide';
+    const systemInstruction = (tenant.botConfig as any)?.systemInstruction || undefined;
 
-    const context = this.sessionService.buildFlowContext(conv, botName);
+    const context = this.sessionService.buildFlowContext(conv, botName, systemInstruction);
     const engine = this.buildEngine(tenant, llm);
 
     const t0 = Date.now();
@@ -65,8 +66,9 @@ export class ChatService {
     const conv = await this.sessionService.findBySessionId(sessionId, tenant._id.toString());
     const llm = await this.llmService.forTenant(tenant._id.toString());
     const botName = tenant.botConfig?.botName ?? 'Guide';
+    const systemInstruction = (tenant.botConfig as any)?.systemInstruction || undefined;
 
-    const context = this.sessionService.buildFlowContext(conv, botName);
+    const context = this.sessionService.buildFlowContext(conv, botName, systemInstruction);
     const engine = this.buildEngine(tenant, llm);
 
     const t0 = Date.now();

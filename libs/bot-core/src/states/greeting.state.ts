@@ -13,7 +13,7 @@ export class GreetingState {
       ? await detectLanguage(userInput, llm)
       : context.language || 'en';
 
-    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
 
     const prompt = `The tourist just started a conversation with: "${userInput || 'Hello'}".
 Greet them warmly in language "${language}" and ask: "How many hours do you have available today?"

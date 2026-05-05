@@ -71,12 +71,12 @@ export class SessionService {
     if (!result) throw new NotFoundException(`Session "${sessionId}" not found`);
   }
 
-  buildFlowContext(conv: ConversationDocument, botName: string): IFlowContext {
+  buildFlowContext(conv: ConversationDocument, botName: string, systemInstruction?: string): IFlowContext {
     const history = conv.messages.slice(-20).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
     return {
       tenantId: conv.tenantId.toString(), sessionId: conv.sessionId,
       language: conv.language, currentState: conv.currentState as IFlowContext['currentState'],
-      botName, collectedParams: conv.collectedParams as IFlowContext['collectedParams'],
+      botName, systemInstruction, collectedParams: conv.collectedParams as IFlowContext['collectedParams'],
       messageHistory: history,
     };
   }

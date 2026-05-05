@@ -13,7 +13,7 @@ export class AskFoodState {
     const lower = userInput.toLowerCase();
 
     if (YES_WORDS.test(lower)) {
-      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
       const message = await llm.chat(
         [{ role: 'user', content: `The tourist wants food! Ask: "Would you prefer a sit-down restaurant or walking street food?" Respond in ${context.language}.` }],
         systemPrompt,
@@ -40,7 +40,7 @@ export class AskFoodState {
     }
 
     // Ambiguous answer — ask again
-    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
     const message = await llm.chat(
       [{ role: 'user', content: `The tourist said "${userInput}". Ask yes or no: do they want to include a food stop? Respond in ${context.language}.` }],
       systemPrompt,

@@ -8,6 +8,6 @@ export { AskFoodStyleState } from './states/ask-food-style.state';
 export { GeneratePlanState } from './states/generate-plan.state';
 export { FollowUpState } from './states/follow-up.state';
 export { OutOfScopeState } from './states/out-of-scope.state';
-export { buildSystemPrompt, buildPlanPrompt } from './prompts/system.prompt';
+export { buildSystemPrompt, buildPlanPrompt, BOT_PERSONAS } from './prompts/system.prompt';
 export { detectLanguage } from './utils/language-detect';
 export { sanitizeUserInput, isInjectionAttempt } from './utils/sanitize';

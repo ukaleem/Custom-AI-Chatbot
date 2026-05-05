@@ -27,7 +27,7 @@ export class AskPreferenceState {
     const preference = parsePreference(userInput);
 
     if (!preference) {
-      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
       const message = await llm.chat(
         [{ role: 'user', content: `The tourist said "${userInput}". Ask them to choose from: Culture, Entertainment, or City Tour. Respond in ${context.language}.` }],
         systemPrompt,
@@ -44,7 +44,7 @@ export class AskPreferenceState {
       };
     }
 
-    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
     const message = await llm.chat(
       [{ role: 'user', content: `Great, the tourist chose ${preference}! Acknowledge and ask: "Would you also like to include a food stop?" Respond in ${context.language}.` }],
       systemPrompt,

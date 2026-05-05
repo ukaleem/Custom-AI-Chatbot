@@ -14,6 +14,8 @@ export interface IFlowContext {
   language: string;
   currentState: BotFlowState;
   botName?: string;
+  /** Custom system instruction from the tenant's bot persona — overrides the default prompt */
+  systemInstruction?: string;
   collectedParams: {
     availableHours?: number;
     preference?: 'culture' | 'entertainment' | 'city-tour';

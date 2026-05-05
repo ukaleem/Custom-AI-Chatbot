@@ -7,6 +7,7 @@ import { CurrentTenant } from '../auth/current-tenant.decorator';
 import { Tenant, TenantDocument } from '../tenants/schemas/tenant.schema';
 import { UpdateLlmConfigDto } from '../tenants/dto/update-llm-config.dto';
 import { UpdateBotConfigDto } from './dto/update-bot-config.dto';
+import { BOT_PERSONAS } from '@custom-ai-chatbot/bot-core';
 
 @ApiTags('Settings')
 @ApiBearerAuth('admin-jwt')
@@ -31,6 +32,18 @@ export class SettingsController {
       llmProvider: full?.llmConfig?.provider ?? null,
       llmModel: full?.llmConfig?.model ?? null,
     };
+  }
+
+  @Get('personas')
+  @ApiOperation({ summary: 'List all available bot personas (name, description, default instruction)' })
+  getPersonas() {
+    return Object.entries(BOT_PERSONAS).map(([key, p]) => ({
+      key,
+      name: p.name,
+      description: p.description,
+      instruction: p.instruction,
+      hasDefaultInstruction: !!p.instruction,
+    }));
   }
 
   @Put('llm')

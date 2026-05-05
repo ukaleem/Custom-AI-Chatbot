@@ -39,7 +39,7 @@ export class AskDurationState {
     const hours = parseHours(userInput);
 
     if (!hours) {
-      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+      const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
       const message = await llm.chat(
         [{ role: 'user', content: `The tourist said "${userInput}". Ask them again how many hours they have (1, 2, 3, or full day). Respond in ${context.language}.` }],
         systemPrompt,
@@ -57,7 +57,7 @@ export class AskDurationState {
       };
     }
 
-    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
     const message = await llm.chat(
       [{ role: 'user', content: `The tourist has ${hours} hour(s). Acknowledge briefly and ask what they prefer: Culture, Entertainment, or City Tour. Respond in ${context.language}.` }],
       systemPrompt,

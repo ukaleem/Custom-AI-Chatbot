@@ -43,4 +43,15 @@ export class UpdateBotConfigDto {
   @IsArray()
   @IsString({ each: true })
   supportedLanguages?: string[];
+
+  @ApiPropertyOptional({ example: 'tourist-guide', description: 'Bot persona key from the persona library or "custom"' })
+  @IsOptional()
+  @emptyToUndefined()
+  @IsString()
+  persona?: string;
+
+  @ApiPropertyOptional({ example: 'You are a friendly assistant...', description: 'Custom system instruction (used when persona is "custom")' })
+  @IsOptional()
+  @IsString()
+  systemInstruction?: string;
 }

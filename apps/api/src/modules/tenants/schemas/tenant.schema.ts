@@ -35,11 +35,14 @@ export class Tenant {
   @Prop({
     type: {
       botName: { type: String, default: 'Guide' },
-      greeting: { type: String, default: 'Hello! I\'m your AI tourist guide. How can I help you today?' },
+      greeting: { type: String, default: 'Hello! How can I help you today?' },
       primaryColor: { type: String, default: '#2563EB' },
       logoUrl: { type: String, default: '' },
       defaultLanguage: { type: String, default: 'en' },
       supportedLanguages: { type: [String], default: ['en', 'it'] },
+      // Bot persona & behaviour
+      persona: { type: String, default: 'tourist-guide' },
+      systemInstruction: { type: String, default: '' },
     },
     default: {},
   })
@@ -50,6 +53,8 @@ export class Tenant {
     logoUrl: string;
     defaultLanguage: string;
     supportedLanguages: string[];
+    persona: string;
+    systemInstruction: string;
   };
 
   @Prop({

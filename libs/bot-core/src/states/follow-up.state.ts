@@ -24,7 +24,7 @@ export class FollowUpState {
     }
 
     const { language } = context;
-    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide');
+    const systemPrompt = buildSystemPrompt(context.botName ?? 'Guide', context.systemInstruction);
 
     const history = context.messageHistory.slice(-6).map((m) => ({
       role: m.role as 'user' | 'assistant',
