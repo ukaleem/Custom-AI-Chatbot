@@ -118,6 +118,81 @@ export class KnowledgeItemService {
     return { migrated: result.created };
   }
 
+  // ─── Purge all ────────────────────────────────────────────────────────────
+
+  async purgeAll(tenant: TenantDocument): Promise<{ deleted: number }> {
+    const result = await this.model.deleteMany({ tenantId: tenant.id }).exec();
+    // Also clear the Qdrant collection for this tenant
+    try {
+      await this.qdrant.delete(tenant.id, '*' as any).catch(() => {});
+      // Recreate empty collection
+    } catch { /* ignore */ }
+    return { deleted: result.deletedCount ?? 0 };
+  }
+
+  // ─── Analytics ────────────────────────────────────────────────────────────
+
+  async getAnalytics(tenantId: string) {
+    const [
+      total, active, byCategory, bySource,
+      withSummary, withTags, avgContentLen
+    ] = await Promise.all([
+      this.model.countDocuments({ tenantId }),
+      this.model.countDocuments({ tenantId, isActive: true }),
+      this.model.aggregate([
+        { $match: { tenantId } },
+        { $group: { _id: '$category', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+      this.model.aggregate([
+        { $match: { tenantId } },
+        { $group: { _id: '$source', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+      this.model.countDocuments({ tenantId, summary: { $ne: '', $exists: true } }),
+      this.model.countDocuments({ tenantId, tags: { $exists: true, $not: { $size: 0 } } }),
+      this.model.aggregate([
+        { $match: { tenantId } },
+        { $project: { len: { $strLenCP: '$content' } } },
+        { $group: { _id: null, avg: { $avg: '$len' } } },
+      ]),
+    ]);
+
+    const avgLen = Math.round(avgContentLen[0]?.avg ?? 0);
+    const incompleteItems = total - withSummary;
+    const noTagsItems    = total - withTags;
+
+    // Quality score: 0–100
+    let score = 0;
+    if (total === 0) {
+      score = 0;
+    } else {
+      score += Math.min(40, Math.round((active / total) * 40));           // active ratio (40pts)
+      score += Math.min(25, Math.round((withSummary / total) * 25));      // has summary (25pts)
+      score += Math.min(20, Math.round((withTags / total) * 20));         // has tags (20pts)
+      score += Math.min(15, Math.round(Math.min(avgLen / 500, 1) * 15));  // content richness (15pts)
+    }
+
+    const grade = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Fair' : 'Needs improvement';
+    const gradeColor = score >= 80 ? '#16a34a' : score >= 60 ? '#2563eb' : score >= 40 ? '#d97706' : '#dc2626';
+
+    const suggestions: string[] = [];
+    if (total < 10)           suggestions.push(`Add more items — ${total} items is a thin knowledge base (aim for 20+)`);
+    if (incompleteItems > 0)  suggestions.push(`${incompleteItems} items have no summary — add a one-line summary for better bot answers`);
+    if (noTagsItems > 0)      suggestions.push(`${noTagsItems} items have no tags — add tags to improve search accuracy`);
+    if (avgLen < 100)         suggestions.push('Content is very short — add more details so the bot can give complete answers');
+    if (active < total)       suggestions.push(`${total - active} items are inactive — activate them or delete them`);
+
+    return {
+      total, active, inactive: total - active,
+      completeness: { withSummary, withTags, avgContentLength: avgLen },
+      byCategory: byCategory.map(c => ({ category: c._id || 'uncategorised', count: c.count })),
+      bySource: bySource.map(s => ({ source: s._id || 'unknown', count: s.count })),
+      quality: { score, grade, gradeColor },
+      suggestions,
+    };
+  }
+
   // ─── Embedding ────────────────────────────────────────────────────────────
 
   private async embedAndUpsert(doc: KnowledgeItemDocument, tenant: TenantDocument): Promise<void> {

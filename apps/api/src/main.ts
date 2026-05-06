@@ -9,15 +9,26 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Security headers — relax for Swagger UI and widget iframe embedding
+  // Security headers — relaxed for widget embedding on any website
   app.use(helmet({
-    contentSecurityPolicy: false,   // Swagger UI uses inline scripts
-    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: false,      // Swagger UI uses inline scripts
+    crossOriginEmbedderPolicy: false,  // widget loads cross-origin resources
+    crossOriginOpenerPolicy: false,    // allow file:// test page to open widget
+    crossOriginResourcePolicy: false,  // allow cross-origin loading of chatbot.js
   }));
 
-  // Serve built widget bundle from dist/apps/widget/
+  // Serve built widget bundle at /widget/chatbot.js
   app.useStaticAssets(path.join(process.cwd(), 'dist', 'apps', 'widget'), {
     prefix: '/widget',
+    setHeaders: (res) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
+  });
+
+  // Serve test.html at /test so the widget works without file:// restrictions
+  app.use('/test', (_req: any, res: any) => {
+    res.sendFile(path.join(process.cwd(), 'test.html'));
   });
 
   app.setGlobalPrefix('api/v1');
