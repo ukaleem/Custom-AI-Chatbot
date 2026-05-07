@@ -142,6 +142,10 @@ function parseSqlFile(sql: string): { byTable: Record<string, ParsedItem[]>; tab
       if (!title) title = fixEncoding(Object.values(o).find(v=>v&&v.length>1)||'');
       if (!content) content=title;
       if (!title||!content) continue;
+      if (/^\d+$/.test(title.trim())) continue;
+      if (title.trim().length < 3) continue;
+      if (content.trim().length < 10) continue;
+      if (content.trim() === title.trim()) continue;
       push(tbl, { title, content, summary, category, tags, metadata: meta, source:'sql', isActive:true });
     }
   }

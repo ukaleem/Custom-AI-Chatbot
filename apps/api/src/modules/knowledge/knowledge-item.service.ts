@@ -118,6 +118,33 @@ export class KnowledgeItemService {
     return { migrated: result.created };
   }
 
+  // ─── Delete invalid / garbage items ─────────────────────────────────────
+
+  async deleteInvalid(tenant: TenantDocument): Promise<{ deleted: number; examples: string[] }> {
+    // Garbage items have:
+    // - Purely numeric title (e.g. "76", "89") → database row IDs used as title
+    // - Title is 1–2 chars (too short to be meaningful)
+    // - Content equals the title (no real content was found)
+    const all = await this.model.find({ tenantId: tenant.id }).lean().exec();
+    const garbage = all.filter(item => {
+      const t = (item.title || '').trim();
+      const c = (item.content || '').trim();
+      const isNumeric = /^\d+$/.test(t);
+      const isTooShort = t.length <= 2;
+      const noContent = c === t || c.length < 5;
+      return isNumeric || isTooShort || noContent;
+    });
+
+    if (!garbage.length) return { deleted: 0, examples: [] };
+
+    const ids = garbage.map(g => g._id);
+    const result = await this.model.deleteMany({ _id: { $in: ids }, tenantId: tenant.id }).exec();
+    return {
+      deleted: result.deletedCount ?? 0,
+      examples: garbage.slice(0, 5).map(g => g.title),
+    };
+  }
+
   // ─── Purge all ────────────────────────────────────────────────────────────
 
   async purgeAll(tenant: TenantDocument): Promise<{ deleted: number }> {

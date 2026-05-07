@@ -82,6 +82,13 @@ export class KnowledgeItemController {
     return this.service.purgeAll(tenant);
   }
 
+  @Delete('invalid')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete invalid/garbage items (numeric titles, no real content)' })
+  deleteInvalid(@CurrentTenant() tenant: TenantDocument) {
+    return this.service.deleteInvalid(tenant);
+  }
+
   // ─── Parameterised routes LAST ────────────────────────────────────────────
 
   @Get(':id')

@@ -212,16 +212,33 @@ interface KBAnalytics {
       </div>
     }
 
-    <!-- ── Danger zone ── -->
-    <div class="danger-zone" style="margin-top:24px">
-      <div style="font-weight:700;color:#dc2626;margin-bottom:6px;font-size:14px">⚠ Danger Zone</div>
-      <p style="font-size:13px;color:#7f1d1d;margin-bottom:12px">
-        Purging removes all {{ total() | number }} knowledge items permanently. Use this before importing a completely new dataset.
-        The bot will have no training data until you re-import.
-      </p>
-      <button class="btn btn-danger" (click)="purgeAll()" [disabled]="purging() || !total()">
-        {{ purging() ? 'Purging…' : 'Purge All ' + total() + ' Items' }}
-      </button>
+    <!-- ── Maintenance zone ── -->
+    <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <!-- Clean garbage -->
+      <div style="border:1px solid #fbbf24;background:#fffbeb;border-radius:10px;padding:16px">
+        <div style="font-weight:700;color:#92400e;margin-bottom:6px;font-size:14px">🧹 Clean Up Garbage Items</div>
+        <p style="font-size:13px;color:#78350f;margin-bottom:12px">
+          Removes items with numeric-only titles (e.g. "76", "89"), titles under 3 characters,
+          or items where content equals the title — typically caused by importing SQL tables
+          that have only ID and code columns.
+        </p>
+        <button class="btn btn-outline" style="border-color:#d97706;color:#92400e"
+          (click)="cleanGarbage()" [disabled]="cleaning()">
+          {{ cleaning() ? 'Cleaning…' : 'Find & Remove Garbage Items' }}
+        </button>
+      </div>
+
+      <!-- Purge all -->
+      <div class="danger-zone">
+        <div style="font-weight:700;color:#dc2626;margin-bottom:6px;font-size:14px">⚠ Purge Everything</div>
+        <p style="font-size:13px;color:#7f1d1d;margin-bottom:12px">
+          Removes all {{ total() | number }} knowledge items permanently. Use before importing
+          a completely new dataset. The bot will have no data until you re-import.
+        </p>
+        <button class="btn btn-danger" (click)="purgeAll()" [disabled]="purging() || !total()">
+          {{ purging() ? 'Purging…' : 'Purge All ' + total() + ' Items' }}
+        </button>
+      </div>
     </div>
   `,
 })
@@ -285,6 +302,26 @@ export class KnowledgeListComponent implements OnInit {
       next: () => { this.toast.success('Item deleted'); this.load(); this.loadAnalytics(); },
       error: () => this.toast.error('Failed to delete'),
     });
+  }
+
+  cleaning = signal(false);
+
+  async cleanGarbage() {
+    this.cleaning.set(true);
+    try {
+      const res = await firstValueFrom(this.api.delete<{ deleted: number; examples: string[] }>('knowledge/invalid'));
+      if (res?.deleted === 0) {
+        this.toast.success('No garbage items found — knowledge base looks clean!');
+      } else {
+        this.toast.success(`Removed ${res.deleted} invalid item(s): "${res.examples?.join('", "') ?? ''}"`);
+      }
+      this.load();
+      this.loadAnalytics();
+    } catch (e: any) {
+      this.toast.error(e?.error?.message ?? 'Cleanup failed');
+    } finally {
+      this.cleaning.set(false);
+    }
   }
 
   async purgeAll() {
